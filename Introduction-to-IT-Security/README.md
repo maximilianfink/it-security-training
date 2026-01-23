@@ -55,16 +55,15 @@ In this lab, you will use scanning tools to identify vulnerabilities in a target
 ### 1. Set Up the Target System
 
 ```bash
-cd Introduction-to-IT-Security/Vulnerability-Scanning
-docker-compose up -d
+dvwa-start
 ```
-This will start a vulnerable web application on your local machine at `http://localhost:4280`.
+This will start a vulnerable web application on your local machine at `http://localhost:42001`.
 
 ### 2. Use nmap to Scan for Open Ports and Services
 
 Run the following command to scan the target system:
 ```bash
-nmap -sV localhost -p 4280
+nmap -sV localhost -p 42001
 ```
 Which services are running on the open ports?
 
@@ -72,24 +71,9 @@ Which services are running on the open ports?
 
 Use the service information obtained from nmap to search for known vulnerabilities in public databases such as the [CVE database](https://cve.mitre.org/) or [NVD](https://nvd.nist.gov/).
 
-### 4. Another nmap Scan with HTTP Scripts
+List any interesting vulnerabilities you found.
 
-Now let’s dig deeper. We’ll use Nmap’s built-in http-* scripts to uncover more about the web application.
-
-Run the following command:
-```bash
-nmap -sV -p 4280 --script "http-enum,http-methods,http-headers,http-title" 127.0.0.1
-```
-
-What This Does:
-* http-enum: Finds common hidden folders (/admin, /config, etc.)
-* http-methods: Shows which actions are allowed (e.g., GET, POST)
-* http-headers: Reveals cookies, cache settings, etc.
-* http-title: Fetches the page title to get app info
-
-What interesting information did you find about the web application?
-
-### 5. Use Nikto to Scan for Web Vulnerabilities
+### 4. Use Nikto to Scan for Web Vulnerabilities
 
 Run Nikto against the target web application:
 ```bash
@@ -99,6 +83,11 @@ nikto -C all -h http://localhost:4280
 What interesting information did you find about the web application?
 
 
+### 5. Stop the Target System
+
+```bash
+dvwa-stop
+```
 
 
 ---
