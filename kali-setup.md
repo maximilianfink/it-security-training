@@ -31,4 +31,16 @@ sudo usermod -aG docker $USER
 4. Search for "JWT" and install the "JWT" extension.
 5. Restart Burp Suite to activate the extension.
 
-### 
+### Install FoxyProxy 
+FoxyProxy is a browser extension that simplifies managing multiple proxy configurations. It is particularly useful when working with Burp Suite.
+1. Install FoxyProxy in your browser (available for Firefox and Chrome).
+2. Configure FoxyProxy to route traffic through Burp Suite (default is localhost:8080).
+3. Burp certificate installation:
+   - In Burp Suite, go to the "Proxy" tab and then the "Options" sub-tab.
+   - Click on "Import / export CA certificate" and choose "Export to file".
+   - Save the certificate (e.g., `burp_cert.cer`).
+   - Import this certificate into your browser's trusted root certification authorities.
+
+## Install Cats
+To install Cats (a security testing tool for APIs), run the following commands:
+
