@@ -32,3 +32,7 @@ See [Introduction-to-IT-Security](./Introduction-to-IT-Security)
 ## API Security
 
 See [API-Security-Training](./API-Security-Training)
+
+## Web Security
+
+See [Web-Security](./Web-Security)
