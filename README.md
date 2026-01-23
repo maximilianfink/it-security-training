@@ -11,7 +11,7 @@ All labs are prepared in a Kali Linux virtual machine (VM). We will use VirtualB
 
 ### Step 2: Download the Kali Linux VM
 
-todo
+The .ova file for the Kali Linux VM will be provided on the fileshare. Copy the file to your local machine.
 
 ### Step 3: Import the Kali Linux VM into VirtualBox
 
