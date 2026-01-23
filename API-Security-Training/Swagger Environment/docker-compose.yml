@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: swagger-ui
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./crapi-openapi-spec.json:/openapi.json:ro
+    environment:
+      SWAGGER_JSON: /openapi.json
+    restart: unless-stopped

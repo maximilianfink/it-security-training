@@ -23,3 +23,12 @@ sudo systemctl enable docker --now
 sudo usermod -aG docker $USER
 ```
 
+### Install Burp JWT Extension
+
+1. Open Burp Suite.
+2. Go to the "Extender" tab.
+3. Click on "BApp Store".
+4. Search for "JWT" and install the "JWT" extension.
+5. Restart Burp Suite to activate the extension.
+
+### 
