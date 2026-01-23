@@ -1,5 +1,14 @@
 # LAB: Introduction to IT Security
 
+## Detecting Phishing Emails (10 min)
+
+Use the following quiz to practice identifying phishing emails:
+https://phishingquiz.withgoogle.com/
+
+
+---
+
+
 ## Social Engineering Attack Simulation (20 min)
 
 In this lab, you will simulate a social engineering attack using a phishing website to demonstrate how attackers can trick users into revealing sensitive information.
@@ -35,3 +44,56 @@ We will use the Social-Engineer Toolkit (SET) to create a phishing site that mim
 Create a convincing email (DE or EN) that appears to come from a trusted source within the organization. Include a link to the cloned site.
 
 The usage of AI tools is allowed to draft the email content.
+
+
+---
+
+## Vulnerability Scanning
+
+In this lab, you will use vulnerability scanning tools to identify security weaknesses in a target system.
+
+### 1. Set Up the Target System
+
+```bash
+cd Introduction-to-IT-Security/Vulnerability-Scanning
+docker-compose up -d
+```
+This will start a vulnerable web application on your local machine at `http://localhost:4280`.
+
+### 2. Use nmap to Scan for Open Ports and Services
+
+Run the following command to scan the target system:
+```bash
+nmap -sV localhost -p 4280
+```
+Which services are running on the open ports?
+
+### 3. Research Known Vulnerabilities
+
+Use the service information obtained from nmap to search for known vulnerabilities in public databases such as the [CVE database](https://cve.mitre.org/) or [NVD](https://nvd.nist.gov/).
+
+### 4. Another nmap Scan with HTTP Scripts
+
+Now let’s dig deeper. We’ll use Nmap’s built-in http-* scripts to uncover more about the web application.
+
+Run the following command:
+```bash
+nmap -sV -p 8888 --script "http-enum,http-methods,http-headers,http-title" 127.0.0.1
+```
+
+What This Does:
+* http-enum: Finds common hidden folders (/admin, /config, etc.)
+* http-methods: Shows which actions are allowed (e.g., GET, POST)
+* http-headers: Reveals cookies, cache settings, etc.
+* http-title: Fetches the page title to get app info
+
+What interesting information did you find about the web application?
+
+### 5. Use Nikto to Scan for Web Vulnerabilities
+
+Run Nikto against the target web application:
+```bash
+nikto -h http://localhost:4280
+```
+
+What interesting information did you find about the web application?
