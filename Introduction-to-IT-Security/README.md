@@ -48,9 +48,9 @@ The usage of AI tools is allowed to draft the email content.
 
 ---
 
-## Vulnerability Scanning
+## Active Scanning (20 min)
 
-In this lab, you will use vulnerability scanning tools to identify security weaknesses in a target system.
+In this lab, you will use scanning tools to identify vulnerabilities in a target system.
 
 ### 1. Set Up the Target System
 
@@ -97,3 +97,45 @@ nikto -h http://localhost:4280
 ```
 
 What interesting information did you find about the web application?
+
+
+
+
+
+
+## CVSS Calculation (10 min)
+
+In this lab, you will calculate the CVSS score for a given vulnerability scenario.
+
+### Scenario
+
+During an internal security assessment, a vulnerability was discovered in a custom-built HR web portal running on a Linux server.
+
+The vulnerable functionality is part of a document upload feature that is only accessible to members of the HR department.
+Access to the HR portal requires:
+- A corporate user account
+- Membership in the HR role
+- VPN access
+
+The HR portal is generally well protected and not accessible to regular employees or external users.
+
+Due to insufficient server-side validation, an attacker with access to the HR portal can upload a specially crafted PHP file, which under certain conditions gets executed by the web server. Successful exploitation results in remote code execution with root privileges.
+
+Exploitation:
+- Requires deep technical knowledge of the application logic
+- Requires precise timing and a specific server configuration
+- Is not reliably exploitable and may fail multiple times
+
+No user interaction is required beyond the attacker’s own actions.
+
+After exploitation, the attacker can:
+- Access and modify sensitive HR documents
+- Modify system configuration and scripts
+
+The system remains partially operational, but service stability is degraded.
+
+The compromise does not automatically propagate to other systems.
+
+### Task
+
+Calculate the CVSS v3.1 base score using an online calculator (e.g., https://www.first.org/cvss/calculator/3.1)
