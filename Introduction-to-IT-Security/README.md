@@ -101,7 +101,7 @@ What interesting information did you find about the web application?
 
 
 
-
+---
 
 ## CVSS Calculation (10 min)
 
