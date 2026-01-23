@@ -78,7 +78,7 @@ Now let’s dig deeper. We’ll use Nmap’s built-in http-* scripts to uncover 
 
 Run the following command:
 ```bash
-nmap -sV -p 8888 --script "http-enum,http-methods,http-headers,http-title" 127.0.0.1
+nmap -sV -p 4280 --script "http-enum,http-methods,http-headers,http-title" 127.0.0.1
 ```
 
 What This Does:
@@ -93,7 +93,7 @@ What interesting information did you find about the web application?
 
 Run Nikto against the target web application:
 ```bash
-nikto -h http://localhost:4280
+nikto -C all -h http://localhost:4280
 ```
 
 What interesting information did you find about the web application?
