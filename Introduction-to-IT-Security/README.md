@@ -92,7 +92,9 @@ dvwa-stop
 
 ---
 
-## Vulnerability Scanning Lab (30 minutes)
+
+
+## Vulnerability Scanning (45 minutes)
 
 In this lab you will learn the typical workflow of vulnerability scanning and exploitation:
 
@@ -102,7 +104,8 @@ In this lab you will learn the typical workflow of vulnerability scanning and ex
 4. Select an appropriate exploit  
 5. Exploit the system 
 
-## Step 1: Start the VMs
+## Step 1: Start the Virtual Machines
+
 1. Make sure the network settings are configured as follows:
    - it-security-training:
      - Adapter 1: NAT
@@ -148,9 +151,9 @@ Before scanning or attacking, you must know where the target system is located i
 
 ## Step 3: Scan the Target with Nmap
 
-In this step, we want to identify all open ports and running services, including versions.
+In this step, you will identify all open ports and running services, including their versions.
 
-For that, run the following nmap scan:
+Run the following Nmap scan:
 
 ```bash
 nmap -sV -p- <target-ip>
@@ -160,21 +163,25 @@ Explanation:
 - `-sV` → service and version detection  
 - `-p-` → scan all 65.535 TCP ports  
 
+Review the output carefully and note the discovered services.
 
 ## Step 4: Focus on the FTP Service
 
-Which FTP service and version is running?
+Identify which FTP service and version is running on the target system.
 
 ### Research Known Vulnerabilities
 
-Search online for known vulnerabilities of the ftp service.
+Search online for known vulnerabilities related to the identified FTP service and version.
 
-Write down your results.
+Hints:
+- Use search terms like <service-name> <version> vulnerability
+- Look for CVEs or public exploit references
 
+Write down your findings.
 
-## Step 5: Start Metasploit
+## Step 5: Exploitation with Metasploit
 
-On Kali:
+### Start Metasploit
 
 ```bash
 msfconsole
@@ -182,10 +189,7 @@ msfconsole
 
 Wait until Metasploit finishes loading.
 
-
-## Step 6: Exploit in Metasploit
-
-### Search for the module
+### Search for a module
 
 ```text
 search vsftpd
@@ -225,7 +229,7 @@ set RHOSTS <target-ip>
 run
 ```
 
-If the exploit is successful, you will immediately receive a shell on the target system.
+If successful, you will receive a shell on the target system.
 
 ### Verify Access
 
@@ -239,20 +243,20 @@ whoami
 ls
 ```
 
+### Step 6: Interpretation
 
+Reflect on the attack:
+- What vulnerability was exploited?
+- Why was exploitation possible?
+- Which defensive measures could have prevented this attack?
 
-### Step 7: Interpretation
+Write down your observations.
 
-What happened?
+### Step 7: Next Steps
 
-Write down some notes.
+After successfully exploiting the system, what would be your next steps as an attacker?
 
-
-
-
-
-
-
+Write down a short list of possible next steps.
 
 
 
