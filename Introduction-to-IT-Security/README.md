@@ -261,7 +261,7 @@ Calculate the CVSS v3.1 base score using an online calculator (e.g., https://www
 ---
 
 
-## ISMS Policy Writing Exercise (30 minutes)
+## ISMS Policy Writing (30 minutes)
 
 The goal of this exercise is to understand how information security requirements are translated into concrete security policies as part of an Information Security Management System (ISMS).
 
