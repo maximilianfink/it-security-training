@@ -51,3 +51,7 @@ See [API-Security-Training](./API-Security-Training)
 ## Web Security
 
 See [Web-Security](./Web-Security)
+
+<style>
+img{width: 600px;}
+</style>
