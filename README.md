@@ -27,6 +27,7 @@ The .ova files for the virtual machines will be provided on the fileshare. Copy 
    - Ensure that "Adapter 1" is enabled and set to "NAT".
    - Ensure that "Adapter 2" is enabled and set to "Host-only Adapter".
    - ![screenshot](img/settings-kali.png)
+   - <img src="img/settings-kali.png" width="400">
 6. Configure the network settings of the metasploitable VM:
    - Right-click on the Metasploitable VM and select "Settings".
    - Go to the "Network" tab.
