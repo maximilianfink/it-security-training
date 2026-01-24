@@ -26,10 +26,12 @@ The .ova files for the virtual machines will be provided on the fileshare. Copy 
    - Go to the "Network" tab.
    - Ensure that "Adapter 1" is enabled and set to "NAT".
    - Ensure that "Adapter 2" is enabled and set to "Host-only Adapter".
+   - ![screenshot](img/settings-kali.png)
 6. Configure the network settings of the metasploitable VM:
    - Right-click on the Metasploitable VM and select "Settings".
    - Go to the "Network" tab.
    - Ensure that "Adapter 1" is enabled and set to "Host-only Adapter".
+   - ![screenshot](img/settings-metasploitable.png)
 7. Start the VMs by selecting it and clicking "Start".
 8. Wait for the VMs to boot up completely.
 9. You can minimize the metasploitable VM after it has started, as we will interact with it from the it-security-training VM.
