@@ -8,3 +8,4 @@ Use docker-compose to set up the Juice Shop environment:
 cd Web-Security/OWASP-Juice-Shop
 docker-compose up -d
 ```
+Visit `http://localhost:3000` in your web browser to access the Juice Shop application.

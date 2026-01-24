@@ -42,7 +42,6 @@ FoxyProxy is a browser extension that simplifies managing multiple proxy configu
    - Import this certificate into your browser's trusted root certification authorities.
 
 
-
 ### Download all docker compose files from the repository
 
 * Clone this repo
