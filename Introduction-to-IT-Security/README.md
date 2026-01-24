@@ -256,3 +256,69 @@ The compromise does not automatically propagate to other systems.
 ### Task
 
 Calculate the CVSS v3.1 base score using an online calculator (e.g., https://www.first.org/cvss/calculator/3.1)
+
+
+---
+
+
+## ISMS Policy Writing Exercise (30 minutes)
+
+The goal of this exercise is to understand how information security requirements are translated into concrete security policies as part of an Information Security Management System (ISMS).
+
+You will work in groups and create a short and practical security policy for a specific topic.
+
+
+### Setup
+- Form **5 groups**
+- Each group represents the **IT security team** of a mid-sized company (~1.000 employees)
+- Each group receives **one policy topic**
+
+### Group Assignments
+
+**Group 1 – Password Policy**  
+Define rules for creating, using, and managing passwords.
+
+**Group 2 – Endpoint Protection / Antivirus Policy**  
+Define how malware protection is handled on company devices.
+
+**Group 3 – Logging & Monitoring Policy**  
+Define what is logged, monitored, and reviewed for security purposes.
+
+**Group 4 – Backup Policy**  
+Define how company data is backed up and restored.
+
+**Group 5 – Secure AI Usage Policy**  
+Define how AI tools (e.g. ChatGPT, Copilot) may be used in a corporate environment.
+
+
+
+### Task
+
+Write a **1-page security policy** for your assigned topic.
+
+- Write in EN or DE
+- Assume real-world constraints (time, budget, users)
+- Length: ½ to 1 page
+
+Your policy must include the following sections:
+
+1. **Purpose**  
+   - Why does this policy exist?
+   - What security goal does it support?
+
+2. **Scope**  
+   - Who does this policy apply to?
+   - Which systems, data, or devices are covered?
+
+3. **Rules & Requirements**  
+   - Clear and concrete rules
+   - What is mandatory?
+   - What is forbidden?
+   - What is optional or requires approval?
+
+4. **Responsibilities**  
+   - Who is responsible for implementation?
+   - Who is responsible for monitoring and enforcement?
+
+5. **Non-Compliance** (short)  
+   - What happens if the policy is violated?
