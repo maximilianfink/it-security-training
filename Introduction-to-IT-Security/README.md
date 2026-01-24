@@ -322,3 +322,5 @@ Your policy must include the following sections:
 
 5. **Non-Compliance** (short)  
    - What happens if the policy is violated?
+
+You can use this template: [Security Policy Template](Security-Policy-Template/policy-template.md)
