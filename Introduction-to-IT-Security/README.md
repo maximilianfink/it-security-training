@@ -8,7 +8,6 @@ https://phishingquiz.withgoogle.com/
 
 ---
 
-
 ## Social Engineering Attack Simulation (20 min)
 
 In this lab, you will simulate a social engineering attack using a phishing website to demonstrate how attackers can trick users into revealing sensitive information.
