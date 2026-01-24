@@ -48,51 +48,6 @@ The usage of AI tools is allowed to draft the email content.
 
 ---
 
-## Vulnerability Scanning (30 min)
-
-In this lab, you will use scanning tools to identify vulnerabilities in a target system.
-
-### 1. Set Up the Target System
-
-```bash
-dvwa-start
-```
-This will start a vulnerable web application on your local machine at `http://localhost:42001`.
-
-### 2. Use nmap to Scan for Open Ports and Services
-
-Run the following command to scan the target system:
-```bash
-nmap -sV localhost -p 42001
-```
-Which services are running on the open ports?
-
-### 3. Research Known Vulnerabilities
-
-Use the service information obtained from nmap to search for known vulnerabilities in public databases such as the [CVE database](https://cve.mitre.org/) or [NVD](https://nvd.nist.gov/).
-
-List any interesting vulnerabilities you found.
-
-### 4. Use Nikto to Scan for Web Vulnerabilities
-
-Run Nikto against the target web application:
-```bash
-nikto -C all -h http://localhost:4280
-```
-
-What interesting information did you find about the web application?
-
-
-### 5. Stop the Target System
-
-```bash
-dvwa-stop
-```
-
-
----
-
-
 
 ## Vulnerability Scanning (45 minutes)
 
@@ -257,6 +212,10 @@ Write down your observations.
 After successfully exploiting the system, what would be your next steps as an attacker?
 
 Write down a short list of possible next steps.
+
+### Step 8: Cleanup
+
+Shut down both virtual machines.
 
 
 
