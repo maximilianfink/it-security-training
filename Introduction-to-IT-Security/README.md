@@ -92,6 +92,24 @@ dvwa-stop
 
 ---
 
+## Vulnerability Scanning (30 min)
+
+idee:
+ziel aufspüren, nmap scan, verwundbarkeiten finden, exploitieren mit metasploit
+
+nach https://medium.com/@mrarslan5156/a-practice-guide-to-exploring-ftp-vulnerabilities-in-metasploitable-2-using-debian-linux-d96f7e7e82fa
+
+1. Start the VM 
+2. Find the IP address of the target VM
+   1. Use `ip a` command in the target VM terminal to find the local network IP range (eth1, e.g. 192.168.56.102/24).
+   2. Use `nmap -sn <network-range>` from your Kali VM to find the target VM IP. There will be two devices found called "Oracle VirtualBox virtual NIC", you and the target VM.
+3. Scan the target using nmap: `nmap -sV -p- 192.168.0.237`
+4. focus on ftp service. search for public known vulnerabilities of the ftp service and version
+5. start metasploit `msfconsole`
+todo
+
+---
+
 ## CVSS Calculation (10 min)
 
 In this lab, you will calculate the CVSS score for a given vulnerability scenario.
