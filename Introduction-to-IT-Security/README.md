@@ -1,10 +1,13 @@
 # LAB: Introduction to IT Security
 
+> **Please use the [Lab Report](lab-report.md) file to document your answers and observations.**
+
+---
+
 ## Detecting Phishing Emails (10 min)
 
 Use the following quiz to practice identifying phishing emails:
 https://phishingquiz.withgoogle.com/
-
 
 ---
 
