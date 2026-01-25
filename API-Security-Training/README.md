@@ -73,115 +73,90 @@ Answer the following questions by only reading the OpenAPI specification (do not
 
 
 
-## Hacking crAPI
-
-### Setup crAPI
-Via docker compose
-
-```shell
-cd API-Security-Training/crAPI/
-docker compose pull
-docker compose -f docker-compose.yml --compatibility up -d
-```
-
-Burpsuite starten
-Firefox öffnen und FoxyProxy auf burp setzen
-
-## Sign up a new User
-
-* Visit `http://localhost:8888`
-  * Note: All emails are sent to mailhog service by default and can be checked on
-`http://localhost:8025`
-* Click on Sign Up
-* Fill the form with a new user
 
 
-## BOLA Vulnerabilities
 
-### Challenge 1 - Access details of another user’s vehicle
 
-To solve the challenge, you need to leak sensitive information of another user’s vehicle.
+---
 
-* Since vehicle IDs are not sequential numbers, but GUIDs, you need to find a way to expose the vehicle ID of another user.
 
-* Find an API endpoint that receives a vehicle ID and returns information about it.
 
-### Challenge 2 - Access mechanic reports of other users
+## APIs Security Challenges
 
-crAPI allows vehicle owners to contact their mechanics by submitting a "contact mechanic" form. This challenge is about accessing mechanic reports that were submitted by other users.
+This lab is designed to simulate real-world API vulnerabilities (OWASP API Top 10) and let you explore them using your own skills and tools.
 
-* Analyze the report submission process
+**Tools Required:**
+- Firefox Browser with FoxyProxy extension
+- Burp Suite 
+- crAPI (running locally)
 
-* Find an hidden API endpoint that exposes details of a mechanic report
+**Setup crAPI:**
 
-* Change the report ID to access other reports
+1. Start crAPI using Docker:
+    ```shell
+    cd API-Security-Training/crAPI/
+    docker compose -f docker-compose.yml --compatibility up -d
+    ```
+2. Wait for all services to start.
+3. Start Burp Suite.
+4. Start Firefox and set FoxyProxy to route traffic through Burp Suite.
+5. Visit `http://localhost:8888` to access the frontend.
+6. Note: All emails are sent to mailhog service by default and can be checked on `http://localhost:8025`
 
-## Broken User Authentication
 
-### Challenge 3 - Reset the password of a different user
+### Challenges Overview
 
-* Find an email address of another user on crAPI
+You are free to attempt the challenges in any order. Some challenges depend on others, so read carefully.
 
-* Brute forcing might be the answer. If you face any protection mechanisms, remember to leverage the predictable nature of REST APIs to find more similar API endpoints.
 
-## Excessive Data Exposure
+#### Challenge 1 – Broken Object-Level Authorization (BOLA)
+> Gain access to another user’s vehicle location via the API.
 
-### Challenge 4 - Find an API endpoint that leaks sensitive information of other users
+#### Challenge 2 – Mechanic Report Disclosure
+> View the mechanic service report of a different user by manipulating request IDs.
 
-### Challenge 5 - Find an API endpoint that leaks an internal property of a video
+#### Challenge 3 – Broken User Authentication
+> Reset the password of another user.
 
-In this challenge, you need to find an internal property of the video resource that shouldn’t be exposed to the user. This property name and value can help you to exploit other vulnerabilities.
+#### Challenge 4 – Sensitive Data Exposure via Order API
+> Find an API endpoint that reveals personal data of other users.
 
-## Rate Limiting
+#### Challenge 5 – Internal Video Properties Leak
+> Identify internal metadata or implementation details exposed via video upload API.
 
-### Challenge 6 - Perform a layer 7 DoS using ‘contact mechanic’ feature
+#### Challenge 6 – Rate Limiting DoS
+> Perform a denial of service using the “Contact Mechanic” feature.
 
-## BFLA 
+#### Challenge 7 – Broken Function-Level Authorization (BFLA)
+> Delete a video uploaded by another user using an unauthorized API endpoint.
 
-### Challenge 7 - Delete a video of another user
+#### Challenge 8 – Mass Assignment: Free Item Exploit
+> Manipulate order status to receive refunds or items without paying.
 
-* Leverage the predictable nature of REST APIs to find an admin endpoint to delete videos
+#### Challenge 9 – Increase Balance by $1,000+
+> Combine several techniques to increase your user balance.
 
-* Delete a video of someone else
+#### Challenge 10 – Internal Parameter Abuse
+> Modify video conversion settings via undocumented parameters.
 
-## Mass Assignment
+#### Challenge 11 – SSRF
+> Make the server send an HTTP request to an external website.
 
-### Challenge 8 - Get an item for free
+#### Challenge 12 – NoSQL Injection
+> Exploit NoSQL injection to get coupon codes without knowing the actual values.
 
-crAPI allows users to return items they have ordered. You simply click the "return order" button, receive a QR code and show it in a USPS store.
-To solve this challenge, you need to find a way to get refunded for an item that you haven’t actually returned.
+#### Challenge 13 – SQL Injection
+> Use SQL injection to reuse or reclaim a previously used coupon.
 
-* Leverage the predictable nature of REST APIs to find a shadow API endpoint that allows you to edit properties of a specific order.
+#### Challenge 14 – Unauthenticated Access
+> Find a sensitive API endpoint that works without authentication.
 
-### Challenge 9 - Increase your balance by $1,000 or more
+#### Challenge 15 – JWT Forgery
+> Manipulate a JWT to impersonate another user without needing their password.
 
-After solving the "Get an item for free" challenge, be creative and find a way to get refunded for an item you never returned, but this time try to get a bigger refund.
+### Good luck!
 
-### Challenge 10 - Update internal video properties
-
-After solving the "Find an API endpoint that leaks an internal property of videos" challenge, try to find an endpoint that would allow you to change the internal property of the video. Changing the value can help you to exploit another vulnerability.
-
-## SSRF
-
-### Challenge 11 - Make crAPI send an HTTP call to "[www.google.com](www.google.com)" and return the HTTP response. 
-
-## NoSQL Injection
-
-### Challenge 12 - Find a way to get free coupons without knowing the coupon code.
-
-## SQL Injection
-
-### Challenge 13 - Find a way to redeem a coupon that you have already claimed by modifying the database
-
-## Unauthenticated Access
-
-### Challenge 14 - Find an endpoint that does not perform authentication checks for a user.
-
-## JWT Vulnerabilities
-
-### Challenge 15 - Find a way to forge valid JWT Tokens
-
-JWT Authentication in crAPI is vulnerable to various attacks. Find any one way to forge a valid JWT token and get full access to the platform.
+Please document your findings and be ready to share your techniques and lessons learned.
 
 
 
@@ -189,6 +164,7 @@ JWT Authentication in crAPI is vulnerable to various attacks. Find any one way t
 
 
 
+---
 
 ## Tool-Based API Security Testing
 
