@@ -56,8 +56,8 @@ Answer the following questions by only reading the OpenAPI specification (do not
     2.	Which authentication methods are supported?
     3.	Which response codes are used in the specification?
     4. How is the API structured (endpoint groups / tags)?
-	5..	Which endpoint groups look security-critical at first glance?
-	6..	Which HTTP methods are mainly used in the Identity area?
+	5.	Which endpoint groups look security-critical at first glance?
+	6.	Which HTTP methods are mainly used in the Identity area?
 2. Identity & Authentication
 	1.	Which endpoints are used for user registration?
 	2.	Which endpoint is used for user login?
@@ -73,7 +73,7 @@ Answer the following questions by only reading the OpenAPI specification (do not
 
 
 
-## API Hacking
+## Hacking crAPI
 
 ### Setup crAPI
 Via docker compose
@@ -190,51 +190,112 @@ JWT Authentication in crAPI is vulnerable to various attacks. Find any one way t
 
 
 
+## Tool-Based API Security Testing
+
+After some manual testing, you will now use several automated tools to test and evaluate the security of the crAPI application. These tools support different layers of security testing including API specification linting, static code analysis, dynamic scanning, and third-party dependency vulnerability scanning.
+
+Each tool provides a unique perspective and complements manual testing efforts.
 
 
+### 1️. API Linting using Vacuum
+
+Vacuum is a tool for linting OpenAPI specifications to find inconsistencies, missing security requirements, and bad practices.
+
+This helps you catch problems early in the API design phase before the API is even implemented.
+
+```shell
+cd API-Security-Training/crAPI/Swagger/
+vacuum lint crapi-openapi-spec.json
+```
+
+**Questions:**
+- What types of vulnerabilities or issues did vacuum tool detect?
+- What could happen if a API spec is publicly accessible?
+- Were any security-related fields (e.g., authentication, HTTPS-only) missing?
+- How could these issues impact the API in production?
 
 
+### 2. Static Applicatio Security Testing (SAST) using Semgrep
 
-
-
-
-
-## Automated API Testing 
-
-### API Linting using Spectral
-
-
-### SAST Scan using Semgrep
-
-findet schwachstellen und fehlkonfiguration
-semantische Codeanalyse, die Schwachstellen findet und
-statisch vor allem API7,
-https://semgrep.dev/
-Codestandards durchsetzen kann
+Semgrep is a code analyzer that detects:
+- Common vulnerabilities and misconfigurations
+- Violations of secure coding standards
 
 ```shell
 cd API-Security-Training/crAPI/codebase/
 semgrep --config=auto
 ```
 
-### DAST Scan using Cats
+**Questions:**
+- What types of vulnerabilities or issues did semgrep detect?
+- What’s the difference between a linter and a SAST tool like Semgrep?
+- How many vulnerabilities were detected by Semgrep?
+- Pick out three findings and take a closer look at them. What kind of vulnerabilities are they?
+- Which findings would you fix first, and why?
+
+### 3. Dynamic API Testing (DAST) using CATS
+
+CATS is a dynamic testing tool that scans your running API based on an OpenAPI specification. It tests real endpoints and performs fuzzing, injection, and behavior checks.
+
+1. Log in to crAPI using the browser
+2. Open Burp Suite and copy the Bearer token from the login request
+3. Run CATS using the token and OpenAPI spec:
 
 ```shell
+cd API-Security-Training/crAPI/Swagger/
 cats \
-  --server=http://localhost:8888 \
-  --contract=openapi-spec/crapi-openapi-spec.json \
-  -H "Authorization=Bearer <ACCESS_TOKEN>"
+--server=http://localhost:8888 \
+--contract=crapi-openapi-spec.json \
+-H "Authorization=Bearer <ACCESS_TOKEN>"
 ```
 
+**Questions:**
+- What types of vulnerabilities or issues did cats detect?
+- How many findings did CATS report?
+- Did CATS discover any vulnerabilities missed during manual testing?
+- Were any of the results false positives?
+- What are the limits of automated DAST tools?
 
-### 3rd party Vuln Scanning using Trivy
 
-check docker images
-```bash
-docker images
-```
 
-choose 2 images and scan them with trivy
-```bash
-trivy image <image:tag>
+### 4. 3rd Party Vulnerability Scanning using Trivy
+
+Trivy scans Docker images and file systems for vulnerable dependencies (CVEs) and outdated packages.
+
+This is important for identifying supply chain risks in your application.
+
+1. Check available images:
+    ```bash
+    docker images
+    ```
+2. Choose three images from the list and scan them:
+    ```bash
+    trivy image <image:tag>
+    ```
+
+**Questions:**
+- What types of vulnerabilities or issues did trivy detect?
+- Which image had the highest number of vulnerabilities?
+- Should all vulnerabilities be fixed immediately?
+- Were any of them rated HIGH or CRITICAL?
+- What would be your recommended mitigation steps?
+
+### 5. Reflection
+After completing the tool-based security testing, reflect on the overall findings:
+
+- How did each tool contribute to the security evaluation?
+- What are the advantages of tools over manual testing?
+- What are some things that are difficult to test using tools?
+- Which tools were mostly noise?
+- How could you integrate these tools into your DevOps environment?
+
+
+
+## Cleanup
+
+Stop all containers:
+
+```shell
+cd API-Security-Training/crAPI/
+docker compose down
 ```
