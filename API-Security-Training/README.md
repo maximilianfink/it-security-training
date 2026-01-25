@@ -103,6 +103,8 @@ This lab is designed to simulate real-world API vulnerabilities (OWASP API Top 1
 
 You are free to attempt the challenges in any order. Some challenges depend on others, so read carefully.
 
+If you get **really stuck**, refer to the [hints](lab-hints.md) for help.
+
 
 #### Challenge 1 – Broken Object-Level Authorization (BOLA)
 > Gain access to another user’s vehicle location via the API.
