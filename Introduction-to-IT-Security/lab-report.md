@@ -1,6 +1,6 @@
 # LAB Report – Introduction to IT Security
 
-**Name(s):**  
+**Name:**  
 **Date:**  
 
 ---

@@ -1,6 +1,6 @@
 # LAB: API Security
 
-## Sunset Calculator API
+## 1. Sunset Calculator API
 
 To optimize automation in our smart home, we want to adjust it to sunrise and sunset times. We want to calculate these times via API.
 
@@ -21,7 +21,7 @@ https://api.sunrise-sunset.org/json?lat=48.8098&lng=9.1612
 
 ---
 
-## Identify HTTP Operations
+## 2. Identify HTTP Operations
 
 Match the statements with the correct HTTP operation (GET, POST, PUT, DELETE):
 
@@ -38,7 +38,7 @@ Match the statements with the correct HTTP operation (GET, POST, PUT, DELETE):
 
 ---
 
-## API Specification
+## 3. API Specification
 
 1. Open folder Swagger:
   ```bash
@@ -57,9 +57,7 @@ Answer the following questions by only reading the OpenAPI specification (do not
     1.	What is the base URL of the API?
     2.	Which authentication methods are supported?
     3.	Which response codes are used in the specification?
-    4. How is the API structured (endpoint groups / tags)?
 	5.	Which endpoint groups look security-critical at first glance?
-	6.	Which HTTP methods are mainly used in the Identity area?
 2. Identity & Authentication
 	1.	Which endpoints are used for user registration?
 	2.	Which endpoint is used for user login?
@@ -68,22 +66,17 @@ Answer the following questions by only reading the OpenAPI specification (do not
 3. Versioning & Complexity
 	1.	Do you see multiple versions of similar authentication endpoints?
 	2.	Why could multiple versions increase the security risk?
-	3.	Which version would you attack first as an attacker – and why?
+	3.	Which version would you attack first as an attacker and why?
 4. Security Observations
 	1.	Which information does Swagger already reveal to a potential attacker?
 	2.	Which Security risks could already be relevant, just by looking at the specification?
 
 
 
-
-
-
-
 ---
 
 
-
-## APIs Security Challenges
+## 4. API Hacking Challenges
 
 This lab is designed to simulate real-world API vulnerabilities (OWASP API Top 10) and let you explore them using your own skills and tools.
 
@@ -162,20 +155,16 @@ Please document your findings and be ready to share your techniques and lessons 
 
 
 
-
-
-
-
 ---
 
-## Tool-Based API Security Testing
+## 5. Tool-Based API Security Testing
 
 After some manual testing, you will now use several automated tools to test and evaluate the security of the crAPI application. These tools support different layers of security testing including API specification linting, static code analysis, dynamic scanning, and third-party dependency vulnerability scanning.
 
 Each tool provides a unique perspective and complements manual testing efforts.
 
 
-### 1. API Linting using Vacuum
+### 5.1 API Linting using Vacuum
 
 Vacuum is a tool for linting OpenAPI specifications to find inconsistencies, missing security requirements, and bad practices.
 
@@ -193,7 +182,7 @@ vacuum lint crapi-openapi-spec.json
 - How could these issues impact the API in production?
 
 
-### 2. Static Applicatio Security Testing (SAST) using Semgrep
+### 5.2 Static Applicatio Security Testing (SAST) using Semgrep
 
 Semgrep is a code analyzer that detects:
 - Common vulnerabilities and misconfigurations
@@ -211,7 +200,7 @@ semgrep --config=auto
 - Pick out three findings and take a closer look at them. What kind of vulnerabilities are they?
 - Which findings would you fix first, and why?
 
-### 3. Dynamic API Testing (DAST) using CATS
+### 5.3 Dynamic API Testing (DAST) using CATS
 
 CATS is a dynamic testing tool that scans your running API based on an OpenAPI specification. It tests real endpoints and performs fuzzing, injection, and behavior checks.
 
@@ -236,7 +225,7 @@ cats \
 
 
 
-### 4. 3rd Party Vulnerability Scanning using Trivy
+### 5.4 3rd Party Vulnerability Scanning using Trivy
 
 Trivy scans Docker images and file systems for vulnerable dependencies (CVEs) and outdated packages.
 
@@ -258,7 +247,7 @@ This is important for identifying supply chain risks in your application.
 - Were any of them rated HIGH or CRITICAL?
 - What would be your recommended mitigation steps?
 
-### 5. Reflection
+### 5.5 Reflection
 After completing the tool-based security testing, reflect on the overall findings:
 
 - How did each tool contribute to the security evaluation?
@@ -269,7 +258,7 @@ After completing the tool-based security testing, reflect on the overall finding
 
 
 
-## Cleanup
+## 6. Cleanup
 
 Stop all containers:
 
