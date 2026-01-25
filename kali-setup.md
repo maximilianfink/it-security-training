@@ -51,17 +51,20 @@ FoxyProxy is a browser extension that simplifies managing multiple proxy configu
 
 ## Install semgrep
 
-$ sudo apt install -y pipx
-$ pipx ensurepath && source ~/.profile
-$ pipx install semgrep
+sudo apt install -y pipx
+pipx ensurepath && source ~/.profile
+pipx install semgrep
 
 ## Install Cats
-To install Cats (a security testing tool for APIs), run the following commands:
+1. Download binary: https://github.com/Endava/cats/releases
+2. Copy to /usr/local/bin:
+    ```bash
+    sudo cp cats /usr/local/bin/cats
+    ```
+
+## Install vacuum
+```bash
+curl -fsSL https://quobix.com/scripts/install_vacuum.sh | sh
+```
 
 
-
-
-todo
-vacuum / liniting tool
-cats
-sonarqube
