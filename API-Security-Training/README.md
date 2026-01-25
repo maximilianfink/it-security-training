@@ -19,6 +19,7 @@ http://api.zippopotam.us/de/70469
 Determine the times of sunrise and sunset for latitude and longitude, e.g.:
 https://api.sunrise-sunset.org/json?lat=48.8098&lng=9.1612
 
+---
 
 ## Identify HTTP Operations
 
@@ -35,6 +36,7 @@ Match the statements with the correct HTTP operation (GET, POST, PUT, DELETE):
 * placeOrder
 * deleteProduct
 
+---
 
 ## API Specification
 
