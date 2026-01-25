@@ -227,4 +227,14 @@ cats \
 ```
 
 
+### 3rd party Vuln Scanning using Trivy
 
+check docker images
+```bash
+docker images
+```
+
+choose 2 images and scan them with trivy
+```bash
+trivy image <image:tag>
+```

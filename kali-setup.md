@@ -49,22 +49,30 @@ FoxyProxy is a browser extension that simplifies managing multiple proxy configu
 * `docker compose pull`
 
 
-## Install semgrep
-
+### Install semgrep
+```bash
 sudo apt install -y pipx
 pipx ensurepath && source ~/.profile
 pipx install semgrep
+```
 
-## Install Cats
+### Install Cats
 1. Download binary: https://github.com/Endava/cats/releases
 2. Copy to /usr/local/bin:
     ```bash
     sudo cp cats /usr/local/bin/cats
     ```
 
-## Install vacuum
+### Install vacuum
 ```bash
+sudo su
 curl -fsSL https://quobix.com/scripts/install_vacuum.sh | sh
+exit
 ```
 
+### Install trivy
+
+```bash
+sudo apt install trivy
+``` 
 
