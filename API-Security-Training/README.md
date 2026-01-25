@@ -206,6 +206,10 @@ JWT Authentication in crAPI is vulnerable to various attacks. Find any one way t
 
 ### SAST Scan using Semgrep
 
+
+$ cd ~/crAPI
+$ semgrep --config=auto
+
 ### DAST Scan using Cats
 
 ```shell

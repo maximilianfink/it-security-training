@@ -49,6 +49,12 @@ FoxyProxy is a browser extension that simplifies managing multiple proxy configu
 * `docker compose pull`
 
 
+## Install semgrep
+
+$ sudo apt install -y pipx
+$ pipx ensurepath && source ~/.profile
+$ pipx install semgrep
+
 ## Install Cats
 To install Cats (a security testing tool for APIs), run the following commands:
 
