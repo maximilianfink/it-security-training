@@ -173,7 +173,7 @@ After some manual testing, you will now use several automated tools to test and 
 Each tool provides a unique perspective and complements manual testing efforts.
 
 
-### 1️. API Linting using Vacuum
+### 1. API Linting using Vacuum
 
 Vacuum is a tool for linting OpenAPI specifications to find inconsistencies, missing security requirements, and bad practices.
 
