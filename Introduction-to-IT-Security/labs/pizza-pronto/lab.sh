@@ -7,6 +7,7 @@
 #   ./lab.sh sbom        list the shop's dependencies (direct + transitive)
 #   ./lab.sh diff P A B  show what changed between two versions of a package
 #   ./lab.sh publish D   publish package folder D to the public registry (attack)
+#   ./lab.sh code        open the lab in VS Code (+ recommended extensions)
 #   ./lab.sh attacker    shell with node/npm on the lab network (for your own packages)
 #   ./lab.sh renovate    run the Renovate bot once
 #   ./lab.sh redeploy    redeploy the shop (runs "npm install" again)
@@ -185,6 +186,20 @@ case "${1:-help}" in
     $COMPOSE up -d --force-recreate shop
     wait_for_shop
     ;;
+  code)
+    # open the lab folder in VS Code and install the recommended extensions
+    if ! command -v code >/dev/null 2>&1; then
+      echo "VS Code ('code') is not installed in this VM." >&2
+      echo "Install it, then run './lab.sh code' again:" >&2
+      echo "  sudo snap install code --classic   # or download the .deb from https://code.visualstudio.com" >&2
+      exit 1
+    fi
+    for ext in dbaeumer.vscode-eslint redhat.vscode-yaml ms-azuretools.vscode-docker editorconfig.editorconfig; do
+      code --install-extension "$ext" >/dev/null 2>&1 || true
+    done
+    code "$PWD"
+    echo "VS Code opened on the lab folder. Accept the recommended extensions if prompted."
+    ;;
   sbom)
     # list the shop's dependencies (direct + transitive)
     $COMPOSE exec -T shop sh -c 'echo "Direct dependencies:"; npm ls 2>/dev/null | sed "1d"; \
@@ -229,6 +244,6 @@ case "${1:-help}" in
     echo "Done. Start again with ./lab.sh start (or ./lab.sh devsecops)"
     ;;
   *)
-    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
     ;;
 esac

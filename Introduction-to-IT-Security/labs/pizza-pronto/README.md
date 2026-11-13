@@ -42,6 +42,16 @@ you will see it appear there live.
 Use the [lab-report.md](../../lab-report.md) to note down your findings and the flags
 you capture (they look like `FLAG{...}`).
 
+**Looking at the code.** The shop's source is in this folder (`app/server.js`, `package.json`, …).
+Open it in VS Code with:
+
+```bash
+./lab.sh code
+```
+
+In the DevSecOps part the same code is also browseable in Gitea at http://localhost:3030/luca/shop
+(no editor needed).
+
 ---
 
 ## Part A – Supply Chain Attacks (≈ 45 min)
@@ -175,48 +185,73 @@ When you're done, clean up: `./lab.sh reset`.
 
 ---
 
-## Part B – DevSecOps: Build a security pipeline (≈ 60 min)
+## Part B – DevSecOps: from single tools to a pipeline (≈ 60 min)
 
-Part A was depressing. Part B is the cure: we add automated security checks so these
-problems get caught **before** they ship. We do it on a real (local) Git server with
-a real CI pipeline – exactly how a modern team works.
+Now you defend the shop. First run each security tool **by hand** and read its output.
+Then wire the same tools into a CI pipeline that runs them on every change.
 
 ```bash
 ./lab.sh devsecops
 ```
 
-This additionally starts **Gitea** (a self-hosted GitHub) at http://localhost:3030
-(log in as `luca` / `pizza-pronto-123`). The shop code is in the repo **luca/shop**,
-including Luca's embarrassing git history.
+This starts **Gitea** (a self-hosted GitHub) at http://localhost:3030 (`luca` / `pizza-pronto-123`).
+The shop code is in **luca/shop**, including Luca's git history.
 
-Open the repo. There is already a CI pipeline under `.gitea/workflows/ci.yml` that only
-checks the syntax. Your job: turn it into a **security pipeline**. We build it step by
-step together; after each step you commit and watch the pipeline run under *Actions*.
+| Tool | Finds | Part-A problem |
+|------|-------|----------------|
+| gitleaks | secrets in code & git history | the `.env` Luca committed |
+| semgrep | dangerous code patterns | command injection, insecure deserialization |
+| hadolint + trivy config | insecure Dockerfile | root user, `ADD`, no pinning |
+| syft + trivy | known-vulnerable dependencies | node-serialize (A4) |
+| guarddog | malicious packages | typosquat (A2), bad update (A3) |
 
-| Step | Tool | Catches | Which Part-A problem |
-|------|------|---------|----------------------|
-| 1 | **gitleaks** | secrets in code & git history | the `.env` Luca committed |
-| 2 | **semgrep** | dangerous code patterns | command injection, insecure deserialization |
-| 3 | **hadolint** + **trivy config** | insecure Dockerfile | runs as root, `ADD`, no pinning |
-| 4 | **guarddog** | malicious packages | typosquat (A2), bad update (A3) |
-| 5 | **syft** + **trivy** | known-vulnerable deps | node-serialize (A4) |
-| 6 | **security gate** | fail the build if anything was found | stop the deployment |
+All tools live in the `secscan` image and work offline – no install needed.
 
-All tools are pre-installed in the `secscan` image and work **offline**. The exact
-commands are introduced on the slides / by the trainer; the full reference pipeline
-is in the solutions.
+### B1 – Run each tool once, by hand
 
-### B1 – Secret in the history
-
-Even though Luca "removed" the `.env` file, it is still in the git history forever.
-Find it:
+Run every tool yourself and read what it reports. A short form to run a tool from the
+scanner image against the shop code:
 
 ```bash
-docker compose run --rm -w /src secscan sh -c "git clone -q http://gitea:3000/luca/shop.git . && gitleaks git --no-banner --redact ."
+scan() { docker compose run --rm -T -v "$PWD/app:/src:ro" secscan "$@"; }
 ```
 
-- Which secret shows up? In which commit? What does the commit message say? 😅
-- Why is "just delete the file and commit" not enough?
+**1. Secrets (gitleaks)** – scan the git history in Gitea:
+
+```bash
+docker compose run --rm -T secscan sh -c "git clone -q http://gitea:3000/luca/shop.git r && gitleaks git --no-banner --redact r"
+```
+Read: which key leaked, in which commit, and what the commit message says. Deleting the
+file in a later commit does **not** remove it from history.
+
+**2. Code (semgrep)** – rules written for this app:
+
+```bash
+scan semgrep scan --config /rules /src
+```
+Read: command injection (`/admin/printer`), insecure deserialization (`node-serialize`),
+hard-coded password – each with file and line.
+
+**3. Dockerfile (hadolint + trivy):**
+
+```bash
+scan hadolint /src/Dockerfile
+scan trivy config /src
+```
+Read: runs as root, `ADD` instead of `COPY`, base image not pinned.
+
+**4. Dependencies (syft + trivy) and malicious packages (guarddog)** – this one resolves
+the dependencies first (one `npm install`, takes ~a minute):
+
+```bash
+scan sh -c "cp -r /src /tmp/s && cd /tmp/s && npm install --ignore-scripts >/dev/null 2>&1 && \
+  echo '--- known vulnerabilities ---' && syft scan dir:. -q -o cyclonedx-json=sbom.json && trivy sbom --quiet sbom.json && \
+  echo '--- malicious packages ---' && guarddog npm scan node_modules/loadsh && guarddog npm scan node_modules/tiny-receipt"
+```
+Read: `node-serialize 0.0.4` → CVE-2017-5941 (critical); `loadsh` has a data-stealing
+install script; `tiny-receipt@1.2.1` hides base64 code.
+
+You now know what each tool finds and how to read it. Next: let CI run them automatically.
 
 ### B2 – Build the pipeline
 
@@ -236,18 +271,70 @@ Now fix the shop so the pipeline passes:
 Re-run the pipeline after each fix. Goal: **all checks green.** That green checkmark is
 "Shift Left" – security moved to the earliest possible moment.
 
-### B4 – Keep dependencies fresh (Renovate)
+### B4 – Keep dependencies fresh: build a Renovate pipeline
 
-Outdated dependencies are how most known vulnerabilities get in. **Renovate** watches
-your dependencies and opens pull requests when updates exist:
+Renovate is a bot that opens pull requests to update outdated dependencies. You build it
+as its own Gitea Actions pipeline, step by step. The `RENOVATE_TOKEN` secret is already set.
 
-```bash
-./lab.sh renovate
+**Step 1 – a workflow that just starts Renovate.**
+In Gitea (luca/shop → *Add file → New file*), create `.gitea/workflows/renovate.yml`:
+
+```yaml
+name: Renovate
+on: [workflow_dispatch]
+jobs:
+  renovate:
+    runs-on: renovate
+    steps:
+      - run: renovate --version
 ```
 
-Look at the new pull request in Gitea (luca/shop → Pull Requests). This is the boring
-but most effective supply-chain defense: update small and often, with CI checking every
-update.
+Commit. Open *Actions → Renovate → Run workflow*. Green = the runner and the Renovate
+image work.
+
+**Step 2 – point Renovate at the repo.** Replace the job with:
+
+```yaml
+jobs:
+  renovate:
+    runs-on: renovate
+    env:
+      RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+      RENOVATE_PLATFORM: gitea
+      RENOVATE_ENDPOINT: http://gitea:3000/api/v1
+      RENOVATE_REPOSITORIES: luca/shop
+      RENOVATE_ONBOARDING: "false"
+      RENOVATE_REQUIRE_CONFIG: optional
+      RENOVATE_NPMRC: "registry=http://registry-internal:4873/"
+      RENOVATE_ENABLED_MANAGERS: '["npm"]'
+      RENOVATE_HOST_RULES: '[{"matchHost":"registry-internal","allowInternal":true},{"matchHost":"gitea","allowInternal":true}]'
+    steps:
+      - run: renovate
+```
+
+Commit, run the workflow again, then open *Pull Requests*: Renovate opened one, e.g.
+"Update dependency express to v5".
+
+**Step 3 – run it automatically.** Change the trigger so it also runs on every push to main:
+
+```yaml
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+```
+
+**Step 4 – configure it (optional).** Add `renovate.json` in the repo root to group all
+updates into a single PR:
+
+```json
+{ "packageRules": [ { "matchManagers": ["npm"], "groupName": "all npm dependencies" } ] }
+```
+
+> This is the real pattern: Renovate opens the update PRs, and your security pipeline (B2)
+> checks every one of them before anyone merges. Update small and often.
+>
+> Shortcut for a quick demo without the pipeline: `./lab.sh renovate`.
 
 ---
 

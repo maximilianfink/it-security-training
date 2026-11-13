@@ -122,8 +122,10 @@ else
   rm -rf "$WORK"
 fi
 
-# ---- token for the Renovate bot ----
-if ! grep -q '^RENOVATE_TOKEN=' .env 2>/dev/null; then
+# ---- token for the Renovate bot (used by "./lab.sh renovate" and the Renovate pipeline) ----
+if grep -q '^RENOVATE_TOKEN=' .env 2>/dev/null; then
+  TOKEN=$(sed -n 's/^RENOVATE_TOKEN=//p' .env)
+else
   echo "[init] creating Renovate token"
   TOKEN=$(curl -s --noproxy '*' -u renovate:renovate-bot-123 -X POST -H 'content-type: application/json' \
     "$GITEA/api/v1/users/renovate/tokens" \
@@ -131,6 +133,8 @@ if ! grep -q '^RENOVATE_TOKEN=' .env 2>/dev/null; then
     | sed -n 's/.*"sha1":"\([^"]*\)".*/\1/p')
   echo "RENOVATE_TOKEN=$TOKEN" >> .env
 fi
+# expose the token as a repo Actions secret so the Renovate workflow can use ${{ secrets.RENOVATE_TOKEN }}
+api PUT /repos/$ADMIN/shop/actions/secrets/RENOVATE_TOKEN "{\"data\":\"$TOKEN\"}" >/dev/null
 
 echo
 echo "[init] done. Open $GITEA and log in as $ADMIN / $ADMIN_PW"

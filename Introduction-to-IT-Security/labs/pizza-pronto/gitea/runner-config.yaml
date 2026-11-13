@@ -8,6 +8,7 @@ runner:
   # jobs with "runs-on: secscan" run in our scanner image
   labels:
     - "secscan:docker://pizza-pronto/secscan"
+    - "renovate:docker://renovate/renovate:44.235"
 container:
   # job containers join the lab network -> they can reach gitea, registries, shop, collector
   network: pizza-pronto_default
