@@ -90,8 +90,10 @@ compute_container_proxy() {
     export "CONTAINER_$v=$cur"
   done
   export CONTAINER_NO_PROXY="registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
-  [ -n "${CONTAINER_HTTP_PROXY:-}${CONTAINER_HTTPS_PROXY:-}" ] && \
+  if [ -n "${CONTAINER_HTTP_PROXY:-}${CONTAINER_HTTPS_PROXY:-}" ]; then
     echo "   (containers use proxy: ${CONTAINER_HTTPS_PROXY:-$CONTAINER_HTTP_PROXY})"
+  fi
+  return 0
 }
 
 # Build args so image builds work behind a corporate proxy (container-reachable proxy).
@@ -101,6 +103,7 @@ build_proxy_args() {
   [ -n "${CONTAINER_HTTP_PROXY:-}" ]  && printf ' --build-arg HTTP_PROXY=%s --build-arg http_proxy=%s' "$CONTAINER_HTTP_PROXY" "$CONTAINER_HTTP_PROXY"
   [ -n "${CONTAINER_HTTPS_PROXY:-}" ] && printf ' --build-arg HTTPS_PROXY=%s --build-arg https_proxy=%s' "$CONTAINER_HTTPS_PROXY" "$CONTAINER_HTTPS_PROXY"
   [ -n "${CONTAINER_HTTP_PROXY:-}${CONTAINER_HTTPS_PROXY:-}" ] && printf ' --build-arg NO_PROXY=%s --build-arg no_proxy=%s' "$CONTAINER_NO_PROXY" "$CONTAINER_NO_PROXY"
+  return 0
 }
 
 ALL="--profile devsecops --profile tools"
