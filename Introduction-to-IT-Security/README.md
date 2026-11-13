@@ -16,7 +16,7 @@ The hands-on labs, in the order of the training:
 | 5 | [Social Engineering Attack Simulation](#social-engineering-attack-simulation-20-min) | Attackers & Attacks | 20 min |
 | 6 | [Vulnerability Scanning](#vulnerability-scanning-45-minutes) | Vulnerabilities | 45 min |
 | 7 | [CVSS Calculation](#cvss-calculation-10-min) | Vulnerabilities | 10 min |
-| 8 | **[Supply Chain, DevSecOps & Skill Battle](#supply-chain-security--devsecops-pizza-pronto)** | DevSecOps | 30–150 min |
+| 8 | **[Supply Chain & DevSecOps](#supply-chain-security--devsecops-pizza-pronto)** | DevSecOps | 100 min |
 | 9 | [ISMS Policy Writing](#isms-policy-writing-30-minutes) | Security Management | 30 min |
 | 10 | [Cryptanalysis Exercises](#cryptanalysis-exercises-15-min) | Cryptography | 15 min |
 
