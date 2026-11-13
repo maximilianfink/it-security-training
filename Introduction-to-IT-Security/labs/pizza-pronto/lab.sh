@@ -4,6 +4,9 @@
 #   ./lab.sh setup       once, needs internet: download/build everything (~5 GB), afterwards works offline
 #   ./lab.sh start       Supply Chain lab: shop, registries, collector
 #   ./lab.sh devsecops   DevSecOps lab: additionally Gitea + CI runner
+#   ./lab.sh sbom        list the shop's dependencies (direct + transitive)
+#   ./lab.sh diff P A B  show what changed between two versions of a package
+#   ./lab.sh publish D   publish package folder D to the public registry (attack)
 #   ./lab.sh attacker    shell with node/npm on the lab network (for your own packages)
 #   ./lab.sh renovate    run the Renovate bot once
 #   ./lab.sh redeploy    redeploy the shop (runs "npm install" again)
@@ -182,6 +185,31 @@ case "${1:-help}" in
     $COMPOSE up -d --force-recreate shop
     wait_for_shop
     ;;
+  sbom)
+    # list the shop's dependencies (direct + transitive)
+    $COMPOSE exec -T shop sh -c 'echo "Direct dependencies:"; npm ls 2>/dev/null | sed "1d"; \
+      echo; echo -n "Total packages (direct + transitive): "; npm ls --all --parseable 2>/dev/null | grep -c node_modules'
+    ;;
+  diff)
+    # compare two versions of a package: ./lab.sh diff tiny-receipt 1.2.0 1.2.1
+    pkg="${2:?usage: ./lab.sh diff <package> <old-version> <new-version>}"
+    v1="${3:?usage: ./lab.sh diff <package> <old-version> <new-version>}"
+    v2="${4:?usage: ./lab.sh diff <package> <old-version> <new-version>}"
+    $COMPOSE --profile tools run --rm -T attacker sh -c "cd /tmp && rm -rf a b *.tgz && \
+      npm pack $pkg@$v1 --registry http://registry-public:4873/ >/dev/null 2>&1 && \
+      npm pack $pkg@$v2 --registry http://registry-public:4873/ >/dev/null 2>&1 && \
+      mkdir a b && tar xf $pkg-$v1.tgz -C a && tar xf $pkg-$v2.tgz -C b && \
+      diff -ru a/package b/package || true"
+    ;;
+  publish)
+    # publish a package folder to the (simulated) public registry: ./lab.sh publish examples/evil-pronto-utils
+    dir="${2:?usage: ./lab.sh publish <folder>}"
+    [ -d "$dir" ] || { echo "No such folder: $dir" >&2; exit 1; }
+    $COMPOSE --profile tools run --rm -T -v "$PWD/$dir:/pkg:ro" attacker sh -c "
+      cp -r /pkg /tmp/pkg && cd /tmp/pkg && \
+      T=\$(node -e \"fetch('http://registry-public:4873/-/user/org.couchdb.user:team',{method:'PUT',headers:{'content-type':'application/json','authorization':'Basic '+Buffer.from('team:secret123').toString('base64')},body:JSON.stringify({name:'team',password:'secret123'})}).then(r=>r.json()).then(j=>console.log(j.token||''))\") && \
+      npm publish --registry http://registry-public:4873/ --//registry-public:4873/:_authToken=\$T"
+    ;;
   status)
     $COMPOSE $ALL ps
     urls
@@ -201,6 +229,6 @@ case "${1:-help}" in
     echo "Done. Start again with ./lab.sh start (or ./lab.sh devsecops)"
     ;;
   *)
-    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
     ;;
 esac

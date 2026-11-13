@@ -37,6 +37,7 @@ services:
 
   registry-public:
     image: verdaccio/verdaccio:7.1
+    restart: unless-stopped
     environment: *offline
     volumes:
       - ./registry/public.yaml:/verdaccio/conf/config.yaml:ro
@@ -50,6 +51,7 @@ services:
 
   registry-internal:
     image: verdaccio/verdaccio:7.1
+    restart: unless-stopped
     environment: *internet
     # make the host alias resolvable so a proxy on the host's localhost is reachable
     extra_hosts:
@@ -82,6 +84,7 @@ services:
 
   collector:
     image: node:22-alpine
+    restart: unless-stopped
     environment: *offline
     volumes:
       - ./collector:/collector:ro
@@ -92,6 +95,7 @@ services:
   shop:
     build: ./app
     image: pizza-pronto/shop
+    restart: unless-stopped
     environment:
       <<: *offline
       PAYMENT_API_KEY: "pk_live_FLAG{supply-chain-attacks-love-env-vars}"
@@ -119,6 +123,7 @@ services:
   gitea:
     profiles: ["devsecops"]
     image: gitea/gitea:28.3
+    restart: unless-stopped
     environment:
       GITEA__security__INSTALL_LOCK: "true"
       GITEA__server__ROOT_URL: "http://localhost:3030/"
@@ -135,10 +140,12 @@ services:
       test: ["CMD", "curl", "-fsS", "http://localhost:3000/api/healthz"]
       interval: 5s
       retries: 30
+      start_period: 60s
 
   runner:
     profiles: ["devsecops"]
     image: gitea/act_runner:0.6.1
+    restart: unless-stopped
     security_opt: ["label=disable"]   # allows socket access on SELinux/Podman hosts
     environment:
       <<: *offline

