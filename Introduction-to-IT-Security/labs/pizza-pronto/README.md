@@ -54,33 +54,40 @@ In the DevSecOps part the same code is also browseable in Gitea at http://localh
 
 ---
 
-## Part A – Supply Chain Attacks (≈ 45 min)
+## Part A – Supply Chain Attacks (≈ 40 min)
 
-Modern apps are mostly other people's code. The Pizza Pronto shop has ~200 npm
-packages that Luca never looked at. Let's see what that means.
+Most of a modern app is other people's code. Here you see what that means for Pizza Pronto.
 
-### A1 – What are we even shipping? (SBOM)
+### A1 – What are we even shipping? (dependencies)
 
-An **SBOM** (Software Bill of Materials) is the list of ingredients of your software.
-
-```bash
-docker compose exec shop sh -c "npm ls --all 2>/dev/null | head -40"
-```
-
-- How many packages does the shop depend on, directly and indirectly?
-- Luca wrote maybe 150 lines himself. Who wrote the rest? Do you know them?
-
-### Kitchen dashboard – weak login & stored XSS (easy)
-
-The cooks process orders at `/kitchen`. It has two beginner-level bugs.
-
-**1. Weak PIN.** Open http://localhost:3000/kitchen – it asks for a PIN. Find it in the code:
+The shop's direct dependencies – the packages Luca chose himself:
 
 ```bash
-grep -n "PIN" app/server.js
+./lab.sh sbom
 ```
 
-Log in with that PIN. You now see every customer's name, address and phone number.
+Now the **full** tree – every dependency pulls in more dependencies:
+
+```bash
+docker compose exec shop npm ls --all
+```
+
+- How many packages did Luca add directly? How many are installed in total?
+- Every one of them runs on the server. Do you know who wrote them?
+
+### A2 – The kitchen dashboard (weak login & stored XSS, easy)
+
+The cooks process orders at http://localhost:3000/kitchen. It has two beginner bugs.
+
+**1. Weak PIN.** Open the website's code in VS Code:
+
+```bash
+./lab.sh code
+```
+
+Open `app/server.js` and read it. The cooks' login PIN is written straight into the
+code – find it yourself (just read, no search tricks). Then log in at
+http://localhost:3000/kitchen. You now see every customer's name, address and phone.
 
 **2. Stored XSS via the order notes.** The "Special requests" field is shown on the
 kitchen board without escaping, so HTML in it runs in the cook's browser.
@@ -96,11 +103,10 @@ kitchen board without escaping, so HTML in it runs in the cook's browser.
 > With that cookie an attacker is in the kitchen without knowing the PIN.
 > Fixes: escape output, keep no PIN in the code, set cookies `HttpOnly` + `SameSite`.
 
-### A2 – A typo with consequences (Typosquatting)
+### A3 – A typo with consequences (Typosquatting)
 
-Look closely at the dependencies in `app/package.json`. One of them is **not** the
-package Luca thinks it is – it's a copy with a name that differs by one letter from
-a very popular package.
+Look at the dependencies in `app/package.json`. One of them is **not** the package Luca
+thinks it is – it is a copy whose name differs by one letter from a very popular library.
 
 1. Find the suspicious package name. (Hint: a famous utility library – spell it out loud.)
 2. Watch the collector (http://localhost:8000), then reinstall the dependencies:
@@ -114,72 +120,19 @@ a very popular package.
 > machine, before your app even starts. A single typo can hand over everything in your
 > environment.
 
-### A3 – The update that went bad (Compromised dependency)
+### A4 – Code execution through a shopping cart (trainer-led)
 
-Legit packages can turn malicious when a maintainer's account is taken over or a
-maintainer is tricked (this really happened: *xz-utils* 2024, *chalk/debug* 2025).
+The shop stores your cart in a cookie using the package `node-serialize`, which has a
+well-known critical vulnerability. This one is harder – **the trainer walks you through it.**
 
-In the public registry, the package `tiny-receipt` has two versions: `1.2.0` (clean)
-and `1.2.1` (a maintainer "update"). Compare them:
+1. Search for "node-serialize CVE". What does the vulnerability allow?
+2. In `app/server.js` (`./lab.sh code`), find where the **cart cookie** is read
+   (`readCart`). The cookie comes from the user, and the code turns it back into an
+   object with `unserialize()`.
+3. Why is turning attacker-controlled data back into an object dangerous? The trainer
+   demonstrates how a crafted cart cookie makes the server run commands.
 
-```bash
-docker compose --profile tools run --rm attacker sh -c "
-  npm pack tiny-receipt@1.2.0 --registry http://registry-public:4873/ >/dev/null 2>&1
-  npm pack tiny-receipt@1.2.1 --registry http://registry-public:4873/ >/dev/null 2>&1
-  mkdir a b && tar xf tiny-receipt-1.2.0.tgz -C a && tar xf tiny-receipt-1.2.1.tgz -C b
-  diff -u a/package/index.js b/package/index.js
-"
-```
-
-- What was added in `1.2.1`? Why is it written to look harmless ("perf: warm up cache")?
-- `app/package.json` asks for `"tiny-receipt": "^1.2.0"`. What does the `^` mean –
-  which version gets installed on the next deployment?
-
-### A4 – Code execution through a shopping cart (Insecure dependency)
-
-The shop stores your cart in a cookie using the package `node-serialize`. That package
-has a well-known, critical vulnerability.
-
-1. Find out which known vulnerability `node-serialize@0.0.4` has (search for
-   "node-serialize CVE"). What does it allow?
-2. In `app/server.js`, find where the cart cookie is read. Why is turning attacker-controlled
-   data back into an object dangerous here?
-
-> We will *exploit* this one together with the trainer – for now, just understand *why*
-> it is exploitable. The fix is one line: never deserialize untrusted data, use `JSON.parse`.
-
-### A5 – Sneaking your own package into the build (Dependency Confusion)
-
-The shop uses an **internal** package `pronto-utils` (Luca wrote it, it only lives in
-Pizza Pronto's internal registry). The deployment pulls dependencies from the internal
-registry, which *also forwards requests to the public registry*.
-
-Question: what happens if a package with the **same name** but a **higher version**
-suddenly appears on the *public* registry?
-
-Try it (you are now the attacker):
-
-```bash
-./lab.sh attacker          # opens a shell with node/npm on the lab network
-```
-
-Inside that shell, create a package `pronto-utils` with a **higher version number**
-than 1.0.0, add a `postinstall` script that pings the collector, log in to the public
-registry and publish it. Then leave the shell and trigger a deployment:
-
-```bash
-./lab.sh redeploy
-```
-
-- Which `pronto-utils` version does the shop install now – the internal one or yours?
-- What shows up on the collector?
-
-> **Lesson:** If internal package names are guessable and your registry falls back to
-> the public one, an attacker can "shadow" internal packages. Fixes: scoped names
-> (`@pizzapronto/utils`), pinned versions + lockfiles, and a registry that never
-> forwards internal names.
-
-> Capture the flags hidden in the environment variables / files you manage to exfiltrate.
+> Fix: never deserialize untrusted data – store a plain item list and use `JSON.parse`.
 
 When you're done, clean up: `./lab.sh reset`.
 
@@ -209,8 +162,9 @@ All tools live in the `secscan` image and work offline – no install needed.
 
 ### B1 – Run each tool once, by hand
 
-Run every tool yourself and read what it reports. A short form to run a tool from the
-scanner image against the shop code:
+Take your time here: run **all five** tools yourself, one at a time, and understand what
+each one reports and why. Only once you know the tools do you build the pipeline (B2).
+A short form to run a tool from the scanner image against the shop code:
 
 ```bash
 scan() { docker compose run --rm -T -v "$PWD/app:/src:ro" secscan "$@"; }
