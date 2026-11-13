@@ -1,8 +1,8 @@
 # Setup of the Kali Linux Environment
 
 ## Default User
-Username: kali
-Password: kali
+Username: `kali`
+Password: *your first challenge – not written down here (no googling!)*
 
 ## Initial Setup
 

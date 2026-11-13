@@ -39,8 +39,7 @@ you will see it appear there live.
 > `./lab.sh status` shows the URLs again, `./lab.sh stop` stops everything,
 > `./lab.sh reset` brings the lab back to the start.
 
-Use the [lab-report.md](../../lab-report.md) to note down your findings and the flags
-you capture (they look like `FLAG{...}`).
+Note down your findings and the flags you capture (they look like `FLAG{...}`).
 
 **Looking at the code.** The shop's source is in this folder (`app/server.js`, `package.json`, …).
 Open it in VS Code with:

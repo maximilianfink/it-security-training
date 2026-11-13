@@ -1,54 +1,53 @@
-# IT Security Training Setup
+# IT Security Training
 
-## Initial Lab Setup
+## Setup
 
-All labs are prepared in a Kali Linux virtual machine (VM). We will use VirtualBox to run the VM on your local machine.
+All labs run inside a **Kali Linux** virtual machine (VirtualBox).
 
-### Step 1: Install VirtualBox
+### 1. Machine & network
 
-1. Download and install the latest version of "Visual C++ Redistributable" (needed for Virtualbox): https://aka.ms/vc14/vc_redist.x64.exe
-2. Download and install VirtualBox: https://download.virtualbox.org/virtualbox/7.2.4/VirtualBox-7.2.4-170995-Win.exe
+- Use one of the prepared **Windows 11** machines in the open network, **or** your own laptop.
+- With your own laptop you can join the local Wi-Fi if you need it:
+  - Network: **Filab**
+  - Password: **Schinken123!**
 
-### Step 2: Download the Virtual Machines
+### 2. Install VirtualBox
 
-The .ova files for the virtual machines will be provided on the fileshare. Copy the files to your local machine:
-* metasploitable.ova
-* it-security-training.ova
+Download and install VirtualBox yourself (directly from the internet):
 
-### Step 3: Import the Kali Linux VM into VirtualBox
+- Visual C++ Redistributable (needed by VirtualBox): https://aka.ms/vc14/vc_redist.x64.exe
+- VirtualBox: https://www.virtualbox.org/wiki/Downloads
 
-1. Open VirtualBox.
-2. Go to "File" > "Import Appliance".
-3. Select the downloaded VM files and follow the prompts to import it.
-4. Once imported, you should see two virtual machines in your VirtualBox Manager.
-5. Configure the network settings of the it-security-training VM:
-   - Right-click on the Kali Linux VM and select "Settings".
-   - Go to the "Network" tab.
-   - Ensure that "Adapter 1" is enabled and set to "NAT".
-   - Ensure that "Adapter 2" is enabled and set to "Host-only Adapter".
-   - <img src="img/settings-kali.png" width="400">
-6. Configure the network settings of the metasploitable VM:
-   - Right-click on the Metasploitable VM and select "Settings".
-   - Go to the "Network" tab.
-   - Ensure that "Adapter 1" is enabled and set to "Host-only Adapter".
-   - <img src="img/settings-metasploitable.png" width="400">
+### 3. Get the virtual machines
 
-7. Start the VMs by selecting it and clicking "Start".
-8. Wait for the VMs to boot up completely.
-9. You can minimize the metasploitable VM after it has started, as we will interact with it from the it-security-training VM.
-10. Log in to the it-security-training VM with the following credentials:
-   - Username: kali
-   - Password: kali
+The `.ova` files are on the internal share: **http://share.filab.lan**
 
+Copy these to your machine:
+- `it-security-training.ova` (Kali Linux – your working VM)
+- `metasploitable.ova` (the target for the network-scanning lab)
 
-## Introduction to IT Security
+### 4. Import into VirtualBox
 
-See [Introduction-to-IT-Security](./Introduction-to-IT-Security)
+1. VirtualBox → *File → Import Appliance*, select the `.ova` files.
+2. Network settings:
+   - **it-security-training**: Adapter 1 = NAT, Adapter 2 = Host-only Adapter
+     <br><img src="img/settings-kali.png" width="400">
+   - **metasploitable**: Adapter 1 = Host-only Adapter
+     <br><img src="img/settings-metasploitable.png" width="400">
+3. Start both VMs and wait until they boot. You can minimise Metasploitable – you drive it from Kali.
 
-## API Security
+### 5. Log in to Kali — Challenge #0 🔑
 
-See [API-Security-Training](./API-Security-Training)
+Username: `kali`
 
-## Web Security
+The password is **not** written down anywhere here. Finding it is your **first challenge**:
+work it out **without googling**. (Hint: it is the most boring password a stock Kali
+image could possibly have.)
 
-See [Web-Security](./Web-Security)
+---
+
+## Labs
+
+- **[Introduction to IT Security](./Introduction-to-IT-Security)** – everything for this training (OSINT, Supply Chain, DevSecOps, …)
+- [API Security](./API-Security-Training)
+- [Web Security](./Web-Security)
