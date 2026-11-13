@@ -189,8 +189,32 @@ case "${1:-help}" in
   code)
     # open the lab folder in VS Code and install the recommended extensions
     if ! command -v code >/dev/null 2>&1; then
-      echo "VS Code ('code') is not installed in this VM." >&2
-      echo "Install it, then run './lab.sh code' again:" >&2
+      echo "VS Code ('code') not found - trying to install it (needs internet)..."
+      # 1) snap, if available
+      if command -v snap >/dev/null 2>&1; then
+        sudo snap install code --classic || true
+      fi
+      # 2) Microsoft apt repository (Debian/Kali/Ubuntu)
+      if ! command -v code >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get install -y wget gpg apt-transport-https >/dev/null 2>&1 || true
+        wget -qO- https://packages.microsoft.com/keys/microsoft.asc \
+          | gpg --dearmor 2>/dev/null | sudo tee /usr/share/keyrings/microsoft.gpg >/dev/null 2>&1 || true
+        echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
+          | sudo tee /etc/apt/sources.list.d/vscode.list >/dev/null 2>&1 || true
+        sudo apt-get update >/dev/null 2>&1 || true
+        sudo apt-get install -y code || true
+      fi
+      # 3) last resort: download the .deb directly (x64)
+      if ! command -v code >/dev/null 2>&1; then
+        tmp=$(mktemp -d)
+        if wget -qO "$tmp/code.deb" "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"; then
+          sudo apt-get install -y "$tmp/code.deb" 2>/dev/null || sudo dpkg -i "$tmp/code.deb" || true
+        fi
+        rm -rf "$tmp"
+      fi
+    fi
+    if ! command -v code >/dev/null 2>&1; then
+      echo "Could not install VS Code automatically (no internet?). Install it manually, then run './lab.sh code' again:" >&2
       echo "  sudo snap install code --classic   # or download the .deb from https://code.visualstudio.com" >&2
       exit 1
     fi
