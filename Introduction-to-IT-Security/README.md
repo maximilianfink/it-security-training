@@ -765,10 +765,18 @@ scan() { docker compose run --rm -T -v "$PWD/app:/src:ro" secscan "$@"; }
 **1. Secrets (gitleaks)** – scan the git history in Gitea:
 
 ```bash
-docker compose run --rm -T secscan sh -c "git clone -q http://gitea:3000/luca/shop.git r && gitleaks git --no-banner --redact r"
+docker compose run --rm -T secscan sh -c "git clone -q http://gitea:3000/luca/shop.git r && gitleaks git --no-banner -v r"
 ```
-Read: which key leaked, in which commit, and what the commit message says. Deleting the
-file in a later commit does **not** remove it from history.
+`-v` prints each finding in full – you actually **see the leaked key** plus `File`, `Commit`
+and `RuleID`. Read: which key leaked, in which commit, and what the commit message says.
+Deleting the file in a later commit does **not** remove it from history – the right fix is to
+**rotate the key** (issue a new one, revoke the old).
+
+> gitleaks exits with code **1** when it finds something (so "exit status 1" here = success).
+> That non-zero exit is exactly what makes the CI pipeline fail later.
+>
+> Tip: in the CI pipeline we add `--redact` so the secret is **not** printed into the build log –
+> here, exploring by hand, we leave it off on purpose so you can see it.
 
 **2. Code (semgrep)** – rules written for this app:
 
