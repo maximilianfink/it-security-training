@@ -5,14 +5,72 @@
 Throughout the training we use a fictional company as a running example:
 **[Pizza Pronto](company/README.md)** – you are its security team.
 
-The hands-on labs:
+The hands-on labs, in the order of the training:
 
-| Lab | Topic |
-|-----|-------|
-| Phishing Quiz & Social Engineering | below |
-| Vulnerability Scanning & CVSS | below |
-| ISMS Policy Writing | below |
-| **[Supply Chain, DevSecOps & Skill Battle](labs/pizza-pronto/README.md)** | Pizza Pronto – npm attacks, security pipeline, AI-agent skills |
+| # | Lab | Chapter | Time |
+|---|-----|---------|------|
+| 1 | [Pizza Pronto: Crown Jewels (C/I/A)](#pizza-pronto-crown-jewels-cia-10-min) | Basics | 10 min |
+| 2 | [Pizza Pronto: Who Gets Access?](#pizza-pronto-who-gets-access-10-min) | Basics | 10 min |
+| 3 | [Detecting Phishing Emails](#detecting-phishing-emails-10-min) | Attackers & Attacks | 10 min |
+| 4 | **[OSINT Challenge: Investigate Pizza Pronto](labs/osint/README.md)** | Attackers & Attacks | 45 min |
+| 5 | [Social Engineering Attack Simulation](#social-engineering-attack-simulation-20-min) | Attackers & Attacks | 20 min |
+| 6 | [Vulnerability Scanning](#vulnerability-scanning-45-minutes) | Vulnerabilities | 45 min |
+| 7 | [CVSS Calculation](#cvss-calculation-10-min) | Vulnerabilities | 10 min |
+| 8 | **[Supply Chain, DevSecOps & Skill Battle](labs/pizza-pronto/README.md)** | DevSecOps | 30–150 min |
+| 9 | [ISMS Policy Writing](#isms-policy-writing-30-minutes) | Security Management | 30 min |
+| 10 | [Cryptanalysis Exercises](#cryptanalysis-exercises-15-min) | Cryptography | 15 min |
+
+---
+
+## Pizza Pronto: Crown Jewels (C/I/A) (10 min)
+
+**Goal:** apply the protection goals confidentiality, integrity and availability to real (fictional) assets.
+
+1. Read the short description of [Pizza Pronto](company/README.md) – especially "Crown Jewels".
+2. In your team, rate each asset: how important is **C**, **I** and **A**? Use *high / medium / low*.
+3. Write **one reason** for every "high" (What exactly would happen if it is lost / changed / unavailable?).
+4. Be ready to present one asset in the plenary.
+
+| Asset | Confidentiality | Integrity | Availability | Reason for "high" |
+|---|---|---|---|---|
+| Customer data (names, addresses, order history) | | | | |
+| Order website | | | | |
+| Payment & bank access | | | | |
+| Instagram & online reviews | | | | |
+| Grandma Romano's secret dough recipe | | | | |
+
+<details><summary>Hint</summary>
+
+Ask three questions per asset: *What if a stranger reads it?* (C) – *What if someone secretly changes it?* (I) –
+*What if it is gone on Friday at 7 pm?* (A)
+</details>
+
+**Reflect:** Which incident from chapter 1 (freezers, Berlin Senate, DB Navigator, Instagram accounts) violated which goal?
+
+---
+
+## Pizza Pronto: Who Gets Access? (10 min)
+
+**Goal:** apply *least privilege*, *no shared accounts* and *segregation of duties*.
+
+1. Look at the people and systems in the [Pizza Pronto description](company/README.md).
+2. Fill in the matrix: **full** / **read** / **own data only** / **no access** – and why.
+3. Mark what is badly solved at Pizza Pronto **today**.
+
+| Person | Shop admin | Office PC | Banking | Instagram | Customer data |
+|---|---|---|---|---|---|
+| Giulia (owner) | | | | | |
+| Lena (apprentice) | | | | | |
+| Luca (IT, nephew) | | | | | |
+| Cooks (Marco, Elif) | | | | | |
+| Drivers (Jonas, Mia, Kevin) | | | | | |
+
+<details><summary>Hint</summary>
+
+- Does Lena need online banking to handle supplier invoices – or only to *prepare* payments?
+- What happens if Luca moves away after his studies?
+- Who uses the office PC password on the counter?
+</details>
 
 ---
 
@@ -58,6 +116,12 @@ We will use the Social-Engineer Toolkit (SET) to create a phishing site that mim
 Create a convincing email (DE or EN) that appears to come from a trusted source within the organization. Include a link to the cloned site.
 
 The usage of AI tools is allowed to draft the email content.
+
+### Variant: Pizza Pronto (after the OSINT challenge)
+
+Use the pretext you built in [OSINT Part D](labs/osint/README.md#part-d--build-the-pretext-10-min):
+write the spear phishing e-mail to **Lena** (lena.schuster@pizza-pronto.example), e.g. as "Herr Brandt" from
+Mühle Schäfer announcing new bank details. Name at least three facts you used – and three red flags Lena could spot.
 
 
 ---
@@ -339,3 +403,40 @@ Your policy must include the following sections:
    - What happens if the policy is violated?
 
 You can use this template: [Security Policy Template](policy-template.md)
+
+
+---
+
+## Cryptanalysis Exercises (15 min)
+
+**Goal:** break two classic ciphers without knowing the key – and understand why modern ciphers are different.
+Tool (optional): [CyberChef](https://gchq.github.io/CyberChef/) or pen and paper.
+
+### 1. Substitution cipher (English text)
+
+```
+JSHWDUYNTS   STY   QNPJ   F   GTXHM
+```
+
+<details><summary>Hint 1</summary>
+It is a Caesar cipher: every letter is shifted by the same number of positions.
+</details>
+<details><summary>Hint 2</summary>
+There are only 25 possible keys – try them all (CyberChef: "ROT13" with a custom amount), or guess the one-letter word.
+</details>
+
+### 2. Transposition cipher (English text)
+
+```
+TMENASSHYNTTUFIHPETCUSILXACLIDATCE!SDI.KS
+```
+
+<details><summary>Hint 1</summary>
+The letters are correct, only their order is changed. The text was written <b>row by row</b> into a table and read <b>column by column</b>.
+</details>
+<details><summary>Hint 2</summary>
+The text has 41 characters. Try different numbers of columns and write the ciphertext back into the columns top-down. One of them gives readable English.
+</details>
+
+**Reflect:** Which tactics did you use? Why do these tactics fail against AES?
+

@@ -52,6 +52,11 @@ FoxyProxy is a browser extension that simplifies managing multiple proxy configu
 * `docker compose pull`
 
 
+### Install OSINT tools
+```bash
+sudo apt install -y libimage-exiftool-perl gobuster whatweb dirb
+```
+
 ### Install semgrep
 ```bash
 sudo apt install -y pipx
