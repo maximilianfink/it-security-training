@@ -723,7 +723,7 @@ The shop code is in **luca/shop**, including Luca's git history.
 | semgrep | dangerous code patterns | command injection, insecure deserialization |
 | hadolint + trivy config | insecure Dockerfile | root user, `ADD`, no pinning |
 | syft + trivy | known-vulnerable dependencies | node-serialize (A4) |
-| guarddog | malicious packages | typosquat (A2), bad update (A3) |
+| guarddog | malicious packages | typosquat (A3) |
 
 All tools live in the `secscan` image and work offline – no install needed.
 
