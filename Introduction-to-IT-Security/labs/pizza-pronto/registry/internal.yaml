@@ -1,22 +1,40 @@
-# Pizza Pronto INTERNAL registry: hosts the company's own packages (pronto-*)
-# and mirrors everything else from the public registry.
+# Pizza Pronto INTERNAL registry (the company's own npm mirror).
+# - company + lab packages (pronto-*, loadsh, tiny-receipt) are mirrored from the lab's
+#   "public" registry  -> this is what makes the dependency-confusion attack possible
+# - everything else (express, lodash, ...) is mirrored from the real npmjs
+# The shop installs its dependencies from here.
 storage: /verdaccio/storage/data
 auth:
   htpasswd:
     file: /verdaccio/storage/htpasswd
 uplinks:
-  public:
+  lab-public:
     url: http://registry-public:4873/
     timeout: 30s
+    cache: true
+  npmjs:
+    url: https://registry.npmjs.org/
+    timeout: 30s
+    cache: true
 packages:
+  # attacker-reachable names: also looked up on the "public" registry (dependency confusion!)
   'pronto-*':
     access: $all
     publish: $all
-    proxy: public
+    proxy: lab-public
+  'loadsh':
+    access: $all
+    publish: $all
+    proxy: lab-public
+  'tiny-receipt':
+    access: $all
+    publish: $all
+    proxy: lab-public
+  # everything else comes from the real npm registry
   '**':
     access: $all
     publish: $all
-    proxy: public
+    proxy: npmjs
 server:
   keepAliveTimeout: 60
 log: { type: stdout, format: pretty, level: warn }

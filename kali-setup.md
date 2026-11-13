@@ -109,7 +109,10 @@ docker image ls | grep -E 'pizza-pronto|gitea|verdaccio|renovate|node'
 Start the lab with `./lab.sh start` (Supply Chain) or `./lab.sh devsecops` (adds Gitea + CI).
 See `Introduction-to-IT-Security/labs/pizza-pronto/README.md`.
 
-> **Behind a corporate proxy** (e.g. on a Bosch laptop): export `HTTP_PROXY`/`HTTPS_PROXY`
-> before `./lab.sh setup` – the build and the npm uplink pick it up. The proxy must be
-> reachable from inside containers (a proxy on `localhost` is not). Inside the training
-> lab there is no proxy and nothing extra is needed.
+> **Behind a corporate proxy** (e.g. on a Bosch laptop): only `./lab.sh setup` needs the
+> internet (to pull images and the shop's npm dependencies). The containers must be able to
+> **reach the proxy and resolve public DNS**. A proxy bound to `localhost` on the host is
+> *not* reachable from inside a container – point the engine/containers at a real proxy host
+> (e.g. `http://rb-proxy-de.bosch.com:8080`) via `HTTP_PROXY`/`HTTPS_PROXY`, or run `setup`
+> on a network with direct internet. Inside the training lab (Kali VM) there is no proxy and
+> nothing extra is needed; after `setup` the lab runs fully offline.

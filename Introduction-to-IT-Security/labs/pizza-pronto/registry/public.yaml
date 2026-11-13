@@ -1,31 +1,16 @@
-# Simulates the PUBLIC npm registry (npmjs.com): anybody can publish packages.
-# Packages that are not stored here are fetched from the real registry.npmjs.org and cached.
+# Simulates the PUBLIC npm registry (npmjs.com): anybody can publish any package.
+# It is a pure local registry (no uplink), so it also works completely offline – this is
+# where our lab packages (loadsh, tiny-receipt) and the packages participants publish during
+# the dependency-confusion attack live. Real npm packages are mirrored by the internal registry.
 storage: /verdaccio/storage/data
 auth:
   htpasswd:
     file: /verdaccio/storage/htpasswd
-uplinks:
-  npmjs:
-    url: https://registry.npmjs.org/
-    timeout: 30s
-# Behind a corporate proxy: uncomment and adapt
-# https_proxy: http://proxy.example.com:8080
 packages:
-  # these packages only exist in our simulated public registry
-  'pronto-*':
-    access: $all
-    publish: $all
-  'tiny-receipt':
-    access: $all
-    publish: $all
-  'loadsh':
-    access: $all
-    publish: $all
-  # all other packages come from the real npm registry (read-only in the lab)
   '**':
     access: $all
-    publish: lab-admins
-    proxy: npmjs
+    publish: $all
+    unpublish: $all
 server:
   keepAliveTimeout: 60
 log: { type: stdout, format: pretty, level: warn }

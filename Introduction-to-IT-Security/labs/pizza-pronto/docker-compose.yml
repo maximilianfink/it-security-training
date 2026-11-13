@@ -36,7 +36,7 @@ services:
 
   registry-public:
     image: verdaccio/verdaccio:7.1
-    environment: *internet
+    environment: *offline
     volumes:
       - ./registry/public.yaml:/verdaccio/conf/config.yaml:ro
       - registry-public:/verdaccio/storage
@@ -49,7 +49,7 @@ services:
 
   registry-internal:
     image: verdaccio/verdaccio:7.1
-    environment: *offline
+    environment: *internet
     volumes:
       - ./registry/internal.yaml:/verdaccio/conf/config.yaml:ro
       - registry-internal:/verdaccio/storage

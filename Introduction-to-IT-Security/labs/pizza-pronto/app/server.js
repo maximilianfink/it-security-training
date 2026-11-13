@@ -53,22 +53,28 @@ function writeCart(res, cart) {
   res.cookie('cart', Buffer.from(serialize.serialize(cart)).toString('base64'));
 }
 
-function page(title, body) {
+function page(title, body, cartCount = 0) {
+  const badge = cartCount > 0 ? ` <span class="badge">${cartCount}</span>` : '';
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>${title} – Pizza Pronto</title>
 <link rel="stylesheet" href="/style.css"></head>
-<body><header><img src="/logo.svg" alt=""><h1>Pizza Pronto</h1><nav><a href="/">Menu</a> <a href="/cart">Cart</a></nav></header>
+<body><header><img src="/logo.svg" alt=""><h1>Pizza Pronto</h1>
+<nav><a href="/">Menu</a> <a href="/cart" class="cart-link">🛒 Cart${badge}</a></nav></header>
 <main>${body}</main>
 <footer>Pizza Pronto · Hauptstraße 12 · Open daily 11:00–23:00</footer></body></html>`;
 }
 
 app.get('/', (req, res) => {
   const cart = readCart(req);
+  const added = MENU.find((p) => p.id === req.query.added);
+  const flash = added ? `<p class="flash">✓ ${added.name} added to your cart</p>` : '';
   const rows = MENU.map((p) => `
-    <li><span>${p.name}</span><span>${formatPrice(p.price)}</span>
-    <form method="post" action="/cart/add"><input type="hidden" name="id" value="${p.id}"><button>Add</button></form></li>`).join('');
-  res.send(page('Menu', `<h2>Our pizzas</h2><ul class="menu">${rows}</ul>
-    <p class="hint">${cart.items.length} item(s) in your cart</p>`));
+    <li><span class="name">${p.name}</span><span class="price">${formatPrice(p.price)}</span>
+    <form method="post" action="/cart/add"><input type="hidden" name="id" value="${p.id}"><button>Add to cart</button></form></li>`).join('');
+  const cta = cart.items.length
+    ? `<p class="hint"><a class="cartcta" href="/cart">🛒 Go to cart (${cart.items.length} item(s)) →</a></p>`
+    : `<p class="hint">Your cart is empty.</p>`;
+  res.send(page('Menu', `${flash}<h2>Our pizzas</h2><ul class="menu">${rows}</ul>${cta}`, cart.items.length));
 });
 
 app.post('/cart/add', (req, res) => {
@@ -76,23 +82,48 @@ app.post('/cart/add', (req, res) => {
   const pizza = MENU.find((p) => p.id === req.body.id);
   if (pizza) cart.items.push(pizza);
   writeCart(res, cart);
-  res.redirect('/');
+  res.redirect('/?added=' + (pizza ? pizza.id : ''));
+});
+
+app.post('/cart/remove', (req, res) => {
+  const cart = readCart(req);
+  const idx = cart.items.findIndex((p) => p.id === req.body.id);
+  if (idx !== -1) cart.items.splice(idx, 1);
+  writeCart(res, cart);
+  res.redirect('/cart');
 });
 
 app.get('/cart', (req, res) => {
   const cart = readCart(req);
   const items = _.sortBy(cart.items, 'name');
   const total = items.reduce((sum, p) => sum + p.price, 0);
-  const rows = items.map((p) => `<li><span>${p.name}</span><span>${formatPrice(p.price)}</span></li>`).join('');
-  res.send(page('Cart', `<h2>Your cart</h2><ul class="menu">${rows || '<li>Empty</li>'}</ul>
-    <p><b>Total: ${formatPrice(total)}</b></p>
+  // group identical pizzas so the cart shows "2x Salami"
+  const groups = {};
+  for (const p of items) {
+    if (!groups[p.id]) groups[p.id] = { pizza: p, qty: 0 };
+    groups[p.id].qty += 1;
+  }
+  const rows = Object.values(groups).map(({ pizza, qty }) => `
+    <li><span class="name">${qty}× ${pizza.name}</span>
+    <span class="price">${formatPrice(pizza.price * qty)}</span>
+    <form method="post" action="/cart/remove"><input type="hidden" name="id" value="${pizza.id}"><button class="remove" title="Remove one">✕</button></form></li>`).join('');
+
+  if (items.length === 0) {
+    return res.send(page('Cart', `<h2>Your cart</h2>
+      <p class="hint">Your cart is empty.</p>
+      <p><a class="cartcta" href="/">← Back to the menu</a></p>`, 0));
+  }
+  res.send(page('Cart', `<h2>Your cart</h2>
+    <ul class="menu cart">${rows}</ul>
+    <p class="total"><b>Total: ${formatPrice(total)}</b></p>
+    <p><a href="/">← Add more pizzas</a></p>
     <h3>Delivery address</h3>
     <form method="post" action="/order" class="order">
       <input name="name" placeholder="Name" required>
       <input name="address" placeholder="Street, ZIP, City" required>
       <input name="phone" placeholder="Phone" required>
-      <button>Order now</button>
-    </form>`));
+      <button>Order now (${formatPrice(total)})</button>
+    </form>`, items.length));
 });
 
 app.post('/order', (req, res) => {
