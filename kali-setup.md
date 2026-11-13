@@ -95,7 +95,7 @@ enough (make sure your user is in the `docker` group – see the warning there).
 Prepare it once (with internet). Afterwards it runs fully offline:
 
 ```bash
-cd Introduction-to-IT-Security/labs/pizza-pronto
+cd Introduction-to-IT-Security/lab
 ./lab.sh setup
 ```
 
@@ -112,7 +112,7 @@ docker image ls | grep -E 'pizza-pronto|gitea|verdaccio|renovate|node'
 ```
 
 Start the lab with `./lab.sh start` (Supply Chain) or `./lab.sh devsecops` (adds Gitea + CI).
-See `Introduction-to-IT-Security/labs/pizza-pronto/README.md`.
+See `Introduction-to-IT-Security/README.md (Supply Chain section)`.
 
 > **Behind a corporate proxy** (e.g. on a Bosch laptop): only `./lab.sh setup` needs the
 > internet. Just export your proxy before running it:
