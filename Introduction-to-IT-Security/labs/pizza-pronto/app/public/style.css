@@ -24,3 +24,15 @@ table { border-collapse: collapse; width: 100%; }
 td, th { border: 1px solid #ddd; padding: .3rem; text-align: left; }
 .hint { color: #777; }
 footer { text-align: center; color: #999; font-size: .8rem; margin-bottom: 2rem; }
+form.login input { max-width: 200px; }
+.kboard { display: flex; gap: 1rem; align-items: flex-start; }
+.kcol { flex: 1; background: #f4f4f4; border-radius: 6px; padding: .5rem; }
+.kcol h3 { margin: .2rem 0 .6rem; text-align: center; }
+.kcol-new h3 { color: #b58900; }
+.kcol-cooking h3 { color: #2471a3; }
+.kcol-done h3 { color: #1e7e45; }
+.ticket { background: #fff; border-left: 4px solid #c0392b; border-radius: 4px; padding: .5rem .6rem; margin-bottom: .6rem; font-size: .9rem; }
+.ticket .notes { background: #fff6d8; border-radius: 3px; padding: .15rem .3rem; margin: .3rem 0; }
+.ticket .addr { color: #888; font-size: .8rem; margin: .3rem 0; }
+.ticket button { padding: .25rem .6rem; font-size: .85rem; }
+.ticket form { margin: 0; }

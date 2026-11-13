@@ -21,6 +21,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const ADMIN_USER = 'luca';
 const ADMIN_PASSWORD = 'Pronto2024!';
 
+// The cooks log in on the kitchen tablet with a short PIN (nobody wants to type a password there)
+const KITCHEN_PIN = '1234';
+
 const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
 
 const MENU = [
@@ -59,7 +62,7 @@ function page(title, body, cartCount = 0) {
 <html><head><meta charset="utf-8"><title>${title} – Pizza Pronto</title>
 <link rel="stylesheet" href="/style.css"></head>
 <body><header><img src="/logo.svg" alt=""><h1>Pizza Pronto</h1>
-<nav><a href="/">Menu</a> <a href="/cart" class="cart-link">🛒 Cart${badge}</a></nav></header>
+<nav><a href="/">Menu</a> <a href="/cart" class="cart-link">🛒 Cart${badge}</a> <a href="/kitchen">Kitchen</a></nav></header>
 <main>${body}</main>
 <footer>Pizza Pronto · Hauptstraße 12 · Open daily 11:00–23:00</footer></body></html>`;
 }
@@ -122,6 +125,7 @@ app.get('/cart', (req, res) => {
       <input name="name" placeholder="Name" required>
       <input name="address" placeholder="Street, ZIP, City" required>
       <input name="phone" placeholder="Phone" required>
+      <input name="notes" placeholder="Special requests (e.g. no onions)">
       <button>Order now (${formatPrice(total)})</button>
     </form>`, items.length));
 });
@@ -135,6 +139,8 @@ app.post('/order', (req, res) => {
     name: req.body.name,
     address: req.body.address,
     phone: req.body.phone,
+    notes: req.body.notes || '',
+    status: 'new',
     items: cart.items.map((p) => p.name),
     total: cart.items.reduce((sum, p) => sum + p.price, 0),
     createdAt: new Date().toISOString(),
@@ -145,6 +151,63 @@ app.post('/order', (req, res) => {
   res.send(page('Thank you', `<h2>Grazie, ${order.name}!</h2>
     <p>Estimated delivery: ${deliveryEta(order.address)}</p>
     <pre>${renderReceipt(order)}</pre>`));
+});
+
+// ---------------- Kitchen dashboard (used by the cooks) ----------------
+
+const STATUSES = { new: 'New', cooking: 'Cooking', done: 'Done' };
+
+function requireKitchen(req, res, next) {
+  if (req.cookies.kitchen === 'ok') return next();
+  res.send(page('Kitchen login', `<h2>Kitchen login</h2>
+    <form method="post" action="/kitchen/login" class="order login">
+      <p>Enter the kitchen PIN:</p>
+      <input name="pin" type="password" placeholder="PIN" autofocus>
+      <button>Log in</button>
+    </form>`));
+}
+
+app.post('/kitchen/login', (req, res) => {
+  if (req.body.pin === KITCHEN_PIN) {
+    // cookie has no HttpOnly flag, so JavaScript on the page can read it
+    res.cookie('kitchen', 'ok');
+    return res.redirect('/kitchen');
+  }
+  res.send(page('Kitchen login', `<h2>Kitchen login</h2>
+    <p class="flash" style="background:#f8d7da;border-color:#c0392b;color:#a11">Wrong PIN.</p>
+    <p><a href="/kitchen">Try again</a></p>`));
+});
+
+app.get('/kitchen', requireKitchen, (req, res) => {
+  const orders = loadOrders();
+  const columns = Object.keys(STATUSES).map((st) => {
+    const cards = orders
+      .filter((o) => (o.status || 'new') === st)
+      .map((o) => {
+        const next = st === 'new' ? 'cooking' : st === 'cooking' ? 'done' : null;
+        const button = next
+          ? `<form method="post" action="/kitchen/order/${o.id}/status"><input type="hidden" name="to" value="${next}"><button>${next === 'done' ? 'Done' : 'Start cooking'}</button></form>`
+          : '';
+        // NOTE: name and notes are rendered without escaping (intentional stored-XSS bug)
+        return `<div class="ticket"><b>#${o.id} ${o.name}</b>
+          <div>${o.items.join(', ')}</div>
+          ${o.notes ? `<div class="notes">📝 ${o.notes}</div>` : ''}
+          <div class="addr">${o.address} · ${o.phone}</div>${button}</div>`;
+      })
+      .join('');
+    return `<div class="kcol kcol-${st}"><h3>${STATUSES[st]}</h3>${cards || '<p class="hint">–</p>'}</div>`;
+  }).join('');
+  res.send(page('Kitchen', `<h2>Incoming orders</h2><div class="kboard">${columns}</div>`));
+});
+
+app.post('/kitchen/order/:id/status', requireKitchen, (req, res) => {
+  const orders = loadOrders();
+  const order = orders.find((o) => String(o.id) === req.params.id);
+  if (order && STATUSES[req.body.to]) {
+    order.status = req.body.to;
+    saveOrders(orders);
+  }
+  res.redirect('/kitchen');
 });
 
 // ---------------- Admin area ----------------
