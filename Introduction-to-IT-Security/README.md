@@ -3,7 +3,7 @@
 > **Write down your answers and observations in your own notes (one file per team is enough).**
 
 Throughout the training we use a fictional company as a running example:
-**[Pizza Pronto](company/README.md)** – you are its security team.
+**[Pizza Pronto](#meet-pizza-pronto)** – you are its security team.
 
 The hands-on labs, in the order of the training:
 
@@ -22,11 +22,67 @@ The hands-on labs, in the order of the training:
 
 ---
 
+## Meet Pizza Pronto
+
+> Throughout the training you are the (first ever) **security team of Pizza Pronto**.
+> Whenever we discuss a topic, ask yourself: *What does this mean for Pizza Pronto?*
+
+**Pizza Pronto** is a small pizzeria with delivery service in a mid-sized German town.
+Business is good – especially Friday and Saturday evenings – and most orders now come in online.
+
+### People
+
+| Role | Name | IT-related notes |
+|---|---|---|
+| Owner | Giulia Romano | Does the accounting on the office PC, approves all payments |
+| Cooks (2) | Marco, Elif | Use the kitchen tablet showing incoming orders |
+| Delivery drivers (3) | Jonas, Mia, Kevin (student job) | Use their **private smartphones** for navigation and the driver app |
+| Apprentice (office) | Lena | Answers emails, handles suppliers, posts on social media |
+| "IT guy" | Luca – Giulia's nephew, studies computer science | Built the online shop as a side project, has admin access to everything |
+
+### IT Landscape
+
+```
+   Customers ──► Website + order shop (shop.pizza-pronto.example) ──► Kitchen tablet
+                      │  menu, team page, imprint – all in Luca's shop app
+                      │  Node.js app, hosted on a small VM
+                      │  uses ~200 npm packages, some written by Luca's friend
+                      ▼
+               Customer database (names, addresses, phone numbers, order history)
+
+   Office PC (Windows, shared password, on the counter)
+     └─ accounting, supplier invoices, email, payroll Excel sheet
+
+   Cash register / card terminal (provided by a payment service provider)
+   Guest Wi-Fi (same router as the office PC)
+   Accounts: delivery platforms, Google Business reviews, Instagram, domain registrar
+   Suppliers: flour wholesaler, drinks supplier, web designer (built the website theme), payment provider
+```
+
+### Crown Jewels
+
+- Customer data (personal data → GDPR!)
+- The order website – no website on a Friday evening = no revenue
+- Payment & bank access
+- Social media accounts and online reviews (reputation)
+- Grandma Romano's secret dough recipe 🍕
+
+### Typical Questions During the Training
+
+- Which assets need **confidentiality**, **integrity**, **availability**?
+- Who would want to attack Pizza Pronto – and why?
+- What could an attacker find out about Pizza Pronto from public sources?
+- Which suppliers and software components does Pizza Pronto depend on?
+- What would happen if ransomware hit the office PC on a Friday at 7 pm?
+- Which simple policies would make Pizza Pronto more secure?
+
+---
+
 ## Pizza Pronto: Crown Jewels (C/I/A) (10 min)
 
 **Goal:** apply the protection goals confidentiality, integrity and availability to real (fictional) assets.
 
-1. Read the short description of [Pizza Pronto](company/README.md) – especially "Crown Jewels".
+1. Read the short description of [Pizza Pronto](#meet-pizza-pronto) – especially "Crown Jewels".
 2. In your team, rate each asset: how important is **C**, **I** and **A**? Use *high / medium / low*.
 3. Write **one reason** for every "high" (What exactly would happen if it is lost / changed / unavailable?).
 4. Be ready to present one asset in the plenary.
@@ -53,7 +109,7 @@ Ask three questions per asset: *What if a stranger reads it?* (C) – *What if s
 
 **Goal:** apply *least privilege*, *no shared accounts* and *segregation of duties*.
 
-1. Look at the people and systems in the [Pizza Pronto description](company/README.md).
+1. Look at the people and systems in the [Pizza Pronto description](#meet-pizza-pronto).
 2. Fill in the matrix: **full** / **read** / **own data only** / **no access** – and why.
 3. Mark what is badly solved at Pizza Pronto **today**.
 
@@ -77,7 +133,7 @@ Ask three questions per asset: *What if a stranger reads it?* (C) – *What if s
 ## OSINT Challenge: Investigate Pizza Pronto (45 min)
 
 > Attackers do their homework before they phish. In this challenge **you** are the attacker:
-> find out as much as possible about [Pizza Pronto](company/README.md) – only from "public" material.
+> find out as much as possible about [Pizza Pronto](#meet-pizza-pronto) – only from "public" material.
 > At the end you use your findings to build a convincing pretext for the next lab (spear phishing).
 
 **Rules**
@@ -565,7 +621,7 @@ Calculate the CVSS v3.1 base score using an online calculator (e.g., https://www
 
 ## Supply Chain Security & DevSecOps (Pizza Pronto)
 
-> You are the security team of **Pizza Pronto** (see [Pizza Pronto](company/README.md)).
+> You are the security team of **Pizza Pronto** (see [Pizza Pronto](#meet-pizza-pronto)).
 > Luca, the owner's nephew, built the online ordering website on a few weekends.
 > In this lab you look at the website the way an attacker – and the way a modern
 > development team – would.
