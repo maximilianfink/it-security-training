@@ -809,21 +809,240 @@ You now know what each tool finds and how to read it. Next: let CI run them auto
 
 #### B2 – Build the pipeline
 
-Add the checks to `.gitea/workflows/ci.yml` (edit directly in the Gitea web UI or push
-from the VM), commit, and watch the pipeline turn **red** – it now *finds* the problems.
+Same tools as B1, but now run by CI on every push. The job runs on the **`secscan`** runner
+(the scanner image with all tools inside). We build the workflow in three small steps – create
+and edit it in Gitea: **luca/shop → Add file → New file**, path `.gitea/workflows/security.yml`.
+
+**Step 1 – skeleton + the first check.** Paste this and commit:
+
+```yaml
+name: Security
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: secscan
+    steps:
+      - name: Checkout (full git history)
+        run: |
+          git clone http://gitea:3000/${{ github.repository }}.git src
+          cd src && git checkout ${{ github.sha }}
+
+      - name: Secrets (gitleaks)
+        id: secrets
+        continue-on-error: true
+        working-directory: src
+        run: gitleaks git --no-banner --redact --verbose .
+```
+
+Open **Actions** → the run starts. `continue-on-error: true` means "this step may fail but the
+pipeline keeps going" – so we collect **all** findings, not just the first one. (In CI we keep
+`--redact` so the secret is not printed into the build log.)
+
+**Step 2 – add the other four checks.** Add these steps *below* the gitleaks step (same
+indentation). Each has its own `id:`, `continue-on-error: true` and `working-directory: src`:
+
+```yaml
+      - name: Code analysis (semgrep)
+        id: sast
+        continue-on-error: true
+        working-directory: src
+        run: semgrep scan --config /rules --error --metrics=off .
+
+      - name: Dockerfile (hadolint + trivy config)
+        id: docker
+        continue-on-error: true
+        working-directory: src
+        run: |
+          hadolint Dockerfile
+          trivy config --exit-code 1 .
+
+      - name: Install dependencies (no install scripts!)
+        working-directory: src
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Malicious packages (guarddog)
+        id: malware
+        continue-on-error: true
+        working-directory: src
+        run: |
+          FAIL=0
+          for pkg in $(jq -r '.dependencies | keys[]' package.json); do
+            guarddog npm scan "node_modules/$pkg" --exit-non-zero-on-finding 2>/dev/null || FAIL=1
+          done
+          exit $FAIL
+
+      - name: SBOM (syft) + known CVEs (trivy)
+        id: sca
+        continue-on-error: true
+        working-directory: src
+        run: |
+          syft scan dir:. -q -o cyclonedx-json=sbom.json
+          trivy sbom --exit-code 1 --severity HIGH,CRITICAL sbom.json
+```
+
+Note the install step has **no** `continue-on-error` and uses `--ignore-scripts` on purpose –
+otherwise the typosquat package would run its `postinstall` and steal the CI secrets.
+
+**Step 3 – the security gate.** Add this as the **last** step (no `continue-on-error`): it reads
+every check's result and fails the whole run if any found something.
+
+```yaml
+      - name: Security gate
+        run: |
+          for r in ${{ steps.secrets.outcome }} ${{ steps.sast.outcome }} ${{ steps.docker.outcome }} ${{ steps.malware.outcome }} ${{ steps.sca.outcome }}; do
+            [ "$r" = "success" ] || { echo "❌ Security checks failed – do not deploy!"; exit 1; }
+          done
+          echo "✅ All security checks passed"
+```
+
+Commit and open **Actions**: every check runs, each red one shows its finding, and the gate
+turns the whole run **red**. That is the pipeline *catching* the bugs automatically.
+
+<details><summary>Stuck? The complete <code>security.yml</code></summary>
+
+Paste this as the whole file – it is the three steps above combined:
+
+```yaml
+name: Security
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: secscan
+    steps:
+      - name: Checkout (full git history)
+        run: |
+          git clone http://gitea:3000/${{ github.repository }}.git src
+          cd src && git checkout ${{ github.sha }}
+
+      - name: Secrets (gitleaks)
+        id: secrets
+        continue-on-error: true
+        working-directory: src
+        run: gitleaks git --no-banner --redact --verbose .
+
+      - name: Code analysis (semgrep)
+        id: sast
+        continue-on-error: true
+        working-directory: src
+        run: semgrep scan --config /rules --error --metrics=off .
+
+      - name: Dockerfile (hadolint + trivy config)
+        id: docker
+        continue-on-error: true
+        working-directory: src
+        run: |
+          hadolint Dockerfile
+          trivy config --exit-code 1 .
+
+      - name: Install dependencies (no install scripts!)
+        working-directory: src
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Malicious packages (guarddog)
+        id: malware
+        continue-on-error: true
+        working-directory: src
+        run: |
+          FAIL=0
+          for pkg in $(jq -r '.dependencies | keys[]' package.json); do
+            guarddog npm scan "node_modules/$pkg" --exit-non-zero-on-finding 2>/dev/null || FAIL=1
+          done
+          exit $FAIL
+
+      - name: SBOM (syft) + known CVEs (trivy)
+        id: sca
+        continue-on-error: true
+        working-directory: src
+        run: |
+          syft scan dir:. -q -o cyclonedx-json=sbom.json
+          trivy sbom --exit-code 1 --severity HIGH,CRITICAL sbom.json
+
+      - name: Security gate
+        run: |
+          for r in ${{ steps.secrets.outcome }} ${{ steps.sast.outcome }} ${{ steps.docker.outcome }} ${{ steps.malware.outcome }} ${{ steps.sca.outcome }}; do
+            [ "$r" = "success" ] || { echo "❌ Security checks failed – do not deploy!"; exit 1; }
+          done
+          echo "✅ All security checks passed"
+```
+</details>
 
 #### B3 – Fix until green
 
-Now fix the shop so the pipeline passes:
+Now fix the shop in `app/` until the pipeline passes. Work through the list, commit after each
+fix, and re-run the pipeline to watch checks go green one by one. Each hint shows the exact change.
 
-- remove the typosquatted package, use the correct one
-- pin the good `tiny-receipt` version + add a lockfile
-- replace `node-serialize` with `JSON.parse`
-- fix the command injection (use `execFile` with an argument list)
-- move secrets out of the code, harden the Dockerfile (non-root, `COPY`, pin the base image)
+**1. Typosquat (`loadsh` → `lodash`)** — fixes the *guarddog* check.
 
-Re-run the pipeline after each fix. Goal: **all checks green.** That green checkmark is
-"Shift Left" – security moved to the earliest possible moment.
+<details><summary>Hint</summary>
+
+- `app/package.json`: change `"loadsh": "^4.17.21"` to `"lodash": "^4.17.21"`.
+- `app/server.js` (top): change `const _ = require('loadsh');` to `const _ = require('lodash');`.
+</details>
+
+**2. Compromised update + no lockfile (`tiny-receipt`)** — fixes part of *SBOM/CVE* + the root cause.
+
+<details><summary>Hint</summary>
+
+- `app/package.json`: pin an exact good version: `"tiny-receipt": "1.2.0"` (no `^`).
+- Create a lockfile so the exact versions are frozen: in `app/`, run `npm install` and commit the
+  new `package-lock.json`.
+</details>
+
+**3. Insecure deserialization (`node-serialize` → `JSON.parse`)** — fixes the *semgrep* + *CVE* finding.
+
+<details><summary>Hint</summary>
+
+- `app/server.js`, `readCart()`: replace `serialize.unserialize(json)` with `JSON.parse(json)`.
+- Remove the import `const serialize = require('node-serialize');` and the `"node-serialize"`
+  dependency from `package.json`. (A cart is *data* – never load it as code.)
+</details>
+
+**4. Command injection (`/admin/printer`)** — fixes a *semgrep* finding.
+
+<details><summary>Hint</summary>
+
+- `app/server.js`: replace `exec(\`ping -c 1 ${req.query.host}\`, …)` with an argument list so the
+  input can't become a command:
+  ```js
+  const { execFile } = require('child_process');
+  execFile('ping', ['-c', '1', req.query.host], (err, stdout, stderr) => { … });
+  ```
+</details>
+
+**5. Hard-coded secrets** — fixes the *semgrep* "hardcoded password" finding.
+
+<details><summary>Hint</summary>
+
+- `app/server.js`: read them from the environment instead of hard-coding:
+  `const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;` (same idea for the kitchen PIN).
+- The leaked AWS key in the **git history** is special: deleting the file does **not** remove it.
+  The real fix is to **rotate the key** (issue a new one, revoke the old). Making *gitleaks* itself
+  go green also needs the history purged – that is advanced (`git filter-repo` / BFG); for the lab,
+  rotation is the lesson, ask the trainer if you want to try the history rewrite.
+</details>
+
+**6. Dockerfile hardening** — fixes the *hadolint* + *trivy config* findings.
+
+<details><summary>Hint</summary>
+
+`app/Dockerfile`: use `COPY` instead of `ADD`, run as a non-root user, and pin the base image:
+```dockerfile
+FROM node:22-alpine
+WORKDIR /app
+COPY . /app
+RUN addgroup -S app && adduser -S app -G app
+USER app
+ENV NODE_ENV=production
+EXPOSE 3000
+HEALTHCHECK CMD wget -qO- http://localhost:3000/ || exit 1
+CMD ["sh", "deploy.sh"]
+```
+</details>
+
+Re-run the pipeline after each fix. Goal: **all checks green** (except possibly gitleaks – see
+fix 5). That green checkmark is "Shift Left": security moved to the earliest possible moment.
 
 #### B4 – Keep dependencies fresh: build a Renovate pipeline
 
