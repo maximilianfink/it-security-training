@@ -1,0 +1,40 @@
+# Small, beginner-friendly Semgrep rule set for the training (works offline)
+rules:
+  - id: command-injection-exec
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      User input flows into child_process.exec(). An attacker can append own shell
+      commands (e.g. "; id"). Use execFile() with an argument list and validate the input.
+    patterns:
+      - pattern-either:
+          - pattern: exec(`...${$REQ.query.$X}...`, ...)
+          - pattern: exec(`...${$REQ.body.$X}...`, ...)
+          - pattern: exec("..." + $REQ.query.$X, ...)
+          - pattern: exec("..." + $REQ.body.$X, ...)
+
+  - id: insecure-deserialization-node-serialize
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      node-serialize.unserialize() executes functions contained in the data
+      (CVE-2017-5941). Never unserialize untrusted data – use JSON.parse().
+    pattern-either:
+      - pattern: (...).unserialize(...)
+      - pattern: $S.unserialize(...)
+
+  - id: hardcoded-password
+    languages: [javascript]
+    severity: WARNING
+    message: Hard-coded credential found. Load secrets from environment variables or a secret store.
+    patterns:
+      - pattern: const $NAME = "...";
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: (?i).*(password|passwd|secret|token|api_?key).*
+
+  - id: basic-auth-plaintext-compare
+    languages: [javascript]
+    severity: INFO
+    message: Credentials compared with === (timing attack, no rate limiting, no MFA). Consider a proper auth library.
+    pattern: $USER === $ADMIN_USER && $PW === $ADMIN_PASSWORD

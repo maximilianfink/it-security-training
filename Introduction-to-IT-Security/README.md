@@ -2,6 +2,18 @@
 
 > **Please use the [Lab Report](lab-report.md) file to document your answers and observations.**
 
+Throughout the training we use a fictional company as a running example:
+**[Pizza Pronto](company/README.md)** – you are its security team.
+
+The hands-on labs:
+
+| Lab | Topic |
+|-----|-------|
+| Phishing Quiz & Social Engineering | below |
+| Vulnerability Scanning & CVSS | below |
+| ISMS Policy Writing | below |
+| **[Supply Chain, DevSecOps & Skill Battle](labs/pizza-pronto/README.md)** | Pizza Pronto – npm attacks, security pipeline, AI-agent skills |
+
 ---
 
 ## Detecting Phishing Emails (10 min)

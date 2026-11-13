@@ -1,0 +1,19 @@
+{
+  "name": "pizza-pronto-shop",
+  "version": "1.4.2",
+  "private": true,
+  "description": "Online ordering website of Pizza Pronto",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Luca Romano",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "loadsh": "^4.17.21",
+    "node-serialize": "0.0.4",
+    "pronto-utils": "^1.0.0",
+    "tiny-receipt": "^1.2.0"
+  }
+}

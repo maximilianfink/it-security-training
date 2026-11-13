@@ -1,0 +1,22 @@
+# Pizza Pronto INTERNAL registry: hosts the company's own packages (pronto-*)
+# and mirrors everything else from the public registry.
+storage: /verdaccio/storage/data
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+uplinks:
+  public:
+    url: http://registry-public:4873/
+    timeout: 30s
+packages:
+  'pronto-*':
+    access: $all
+    publish: $all
+    proxy: public
+  '**':
+    access: $all
+    publish: $all
+    proxy: public
+server:
+  keepAliveTimeout: 60
+log: { type: stdout, format: pretty, level: warn }

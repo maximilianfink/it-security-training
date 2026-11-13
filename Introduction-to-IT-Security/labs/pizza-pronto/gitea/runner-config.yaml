@@ -1,0 +1,16 @@
+# act_runner configuration for the training
+log:
+  level: info
+runner:
+  file: /data/.runner
+  capacity: 1
+  timeout: 30m
+  # jobs with "runs-on: secscan" run in our scanner image
+  labels:
+    - "secscan:docker://pizza-pronto/secscan"
+container:
+  # job containers join the lab network -> they can reach gitea, registries, shop, collector
+  network: pizza-pronto_default
+  # use the locally built image, never pull (works offline)
+  force_pull: false
+  privileged: false

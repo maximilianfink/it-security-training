@@ -17,11 +17,14 @@ sudo apt update && sudo apt -y upgrade
 To install Docker, execute the following commands:
 
 ```bash
-sudo apt install -y docker.io
-sudo apt install docker-compose
+sudo apt install -y docker.io docker-compose-plugin
 sudo systemctl enable docker --now
 sudo usermod -aG docker $USER
 ```
+
+> Use the **Docker Compose v2 plugin** (`docker compose ...`), not the old
+> `docker-compose` (v1) package – the Pizza Pronto lab relies on v2 features.
+> After `usermod`, log out and back in so your user is in the `docker` group.
 
 ### Install Burp JWT Extension
 
@@ -76,3 +79,30 @@ exit
 sudo apt install trivy
 ``` 
 
+## Pizza Pronto lab (Supply Chain, DevSecOps, Skill Battle)
+
+This lab runs everything locally in Docker – no accounts, no cloud. It needs the Docker
+setup above (`docker.io`, `docker-compose`, user in the `docker` group).
+
+**VM requirements:** at least **8 GB RAM** and about **10 GB free disk** for the images.
+
+Prepare it once (with internet). Afterwards it runs fully offline:
+
+```bash
+cd Introduction-to-IT-Security/labs/pizza-pronto
+./lab.sh setup
+```
+
+`./lab.sh setup` pulls all images (Gitea, act_runner, Verdaccio, Renovate, Node) and
+builds the shop + the `secscan` scanner image (~3 GB, contains gitleaks, semgrep, trivy
+with its vulnerability DB, syft, hadolint, guarddog). For the OVA, run `setup` once so
+every image and the npm package cache are baked in.
+
+Verify the images are present:
+
+```bash
+docker image ls | grep -E 'pizza-pronto|gitea|verdaccio|renovate|node'
+```
+
+Start the lab with `./lab.sh start` (Supply Chain) or `./lab.sh devsecops` (adds Gitea + CI).
+See `Introduction-to-IT-Security/labs/pizza-pronto/README.md`.

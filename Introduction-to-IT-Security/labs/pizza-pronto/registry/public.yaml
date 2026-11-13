@@ -1,0 +1,31 @@
+# Simulates the PUBLIC npm registry (npmjs.com): anybody can publish packages.
+# Packages that are not stored here are fetched from the real registry.npmjs.org and cached.
+storage: /verdaccio/storage/data
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+    timeout: 30s
+# Behind a corporate proxy: uncomment and adapt
+# https_proxy: http://proxy.example.com:8080
+packages:
+  # these packages only exist in our simulated public registry
+  'pronto-*':
+    access: $all
+    publish: $all
+  'tiny-receipt':
+    access: $all
+    publish: $all
+  'loadsh':
+    access: $all
+    publish: $all
+  # all other packages come from the real npm registry (read-only in the lab)
+  '**':
+    access: $all
+    publish: lab-admins
+    proxy: npmjs
+server:
+  keepAliveTimeout: 60
+log: { type: stdout, format: pretty, level: warn }

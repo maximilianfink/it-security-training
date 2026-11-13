@@ -1,0 +1,4 @@
+.env
+attacker/*
+!attacker/README.md
+node_modules/

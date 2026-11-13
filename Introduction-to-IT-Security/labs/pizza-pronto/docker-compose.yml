@@ -1,0 +1,173 @@
+# Pizza Pronto lab environment – intentionally vulnerable, only run inside the training VM!
+#
+#   docker compose up -d --build                         -> shop + registries + collector   (Supply Chain lab)
+#   docker compose --profile devsecops up -d --build     -> additionally Gitea + CI runner   (DevSecOps lab)
+#
+#   Shop:               http://localhost:3000
+#   Collector:          http://localhost:8000   ("attacker server")
+#   Internal registry:  http://localhost:4873   (Pizza Pronto packages + mirror)
+#   Public registry:    http://localhost:4874   (simulates npmjs.com)
+#   Gitea:              http://localhost:3030   (devsecops profile)
+
+name: pizza-pronto
+
+# Lab-internal traffic must never go through a (corporate) proxy.
+# Only registry-public talks to the internet (registry.npmjs.org) and keeps the proxy settings.
+x-no-proxy: &no-proxy
+  NO_PROXY: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
+  no_proxy: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
+x-offline: &offline
+  <<: *no-proxy
+  HTTP_PROXY: ""
+  HTTPS_PROXY: ""
+  http_proxy: ""
+  https_proxy: ""
+
+services:
+
+  registry-public:
+    image: verdaccio/verdaccio:7.1
+    environment: *no-proxy
+    volumes:
+      - ./registry/public.yaml:/verdaccio/conf/config.yaml:ro
+      - registry-public:/verdaccio/storage
+    ports:
+      - "127.0.0.1:4874:4873"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4873/-/ping').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      retries: 20
+
+  registry-internal:
+    image: verdaccio/verdaccio:7.1
+    environment: *offline
+    volumes:
+      - ./registry/internal.yaml:/verdaccio/conf/config.yaml:ro
+      - registry-internal:/verdaccio/storage
+    ports:
+      - "127.0.0.1:4873:4873"
+    depends_on:
+      registry-public:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4873/-/ping').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      retries: 20
+
+  seed:
+    image: node:22-alpine
+    environment: *offline
+    volumes:
+      - ./seed:/seed:ro
+    command: ["sh", "/seed/seed.sh"]
+    depends_on:
+      registry-public:
+        condition: service_healthy
+      registry-internal:
+        condition: service_healthy
+
+  collector:
+    image: node:22-alpine
+    environment: *offline
+    volumes:
+      - ./collector:/collector:ro
+    command: ["node", "/collector/server.js"]
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  shop:
+    build: ./app
+    image: pizza-pronto/shop
+    environment:
+      <<: *offline
+      PAYMENT_API_KEY: "pk_live_FLAG{supply-chain-attacks-love-env-vars}"
+      MAIL_PASSWORD: "Pizza4Ever!"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+      collector:
+        condition: service_started
+
+  # Attacker workstation with node/npm – run on demand: docker compose run --rm attacker
+  attacker:
+    profiles: ["tools"]
+    image: node:22-alpine
+    environment: *offline
+    volumes:
+      - ./attacker:/attacker
+    working_dir: /attacker
+    command: ["sh"]
+
+  # ---------------- DevSecOps lab ----------------
+
+  gitea:
+    profiles: ["devsecops"]
+    image: gitea/gitea:28.3
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__server__ROOT_URL: "http://localhost:3030/"
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__actions__ENABLED: "true"
+      GITEA__actions__DEFAULT_ACTIONS_URL: "self"
+      GITEA__service__DISABLE_REGISTRATION: "true"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "${RUNNER_TOKEN:-0c7a5e1f9b3d2a4c6e8f0a1b3c5d7e9f1a2b4c6d}"
+    volumes:
+      - gitea:/data
+    ports:
+      - "127.0.0.1:3030:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/api/healthz"]
+      interval: 5s
+      retries: 30
+
+  runner:
+    profiles: ["devsecops"]
+    image: gitea/act_runner:0.6.1
+    security_opt: ["label=disable"]   # allows socket access on SELinux/Podman hosts
+    environment:
+      <<: *offline
+      GITEA_INSTANCE_URL: "http://gitea:3000"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "${RUNNER_TOKEN:-0c7a5e1f9b3d2a4c6e8f0a1b3c5d7e9f1a2b4c6d}"
+      GITEA_RUNNER_NAME: "pizza-runner"
+      GITEA_RUNNER_LABELS: "secscan:docker://pizza-pronto/secscan"
+      CONFIG_FILE: /config.yaml
+    volumes:
+      - ./gitea/runner-config.yaml:/config.yaml:ro
+      - runner:/data
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+    depends_on:
+      gitea:
+        condition: service_healthy
+
+  # Scanner image used by the CI jobs (built once, contains all tools + vulnerability databases)
+  secscan:
+    profiles: ["build-only"]
+    build: ./secscan
+    image: pizza-pronto/secscan
+
+  # Dependency update bot – run on demand: docker compose run --rm renovate
+  renovate:
+    profiles: ["tools"]
+    image: renovate/renovate:44.235
+    environment:
+      <<: *offline
+      RENOVATE_PLATFORM: gitea
+      RENOVATE_ENDPOINT: "http://gitea:3000/api/v1"
+      RENOVATE_TOKEN: "${RENOVATE_TOKEN:-run ./gitea/init.sh first}"
+      RENOVATE_REPOSITORIES: "luca/shop"
+      RENOVATE_ONBOARDING: "false"
+      RENOVATE_REQUIRE_CONFIG: "optional"
+      RENOVATE_NPMRC: "registry=http://registry-internal:4873/"
+      RENOVATE_GIT_AUTHOR: "Renovate Bot <renovate@pizza-pronto.example>"
+      RENOVATE_FETCH_CHANGE_LOGS: "off"
+      RENOVATE_ENABLED_MANAGERS: '["npm"]'
+      RENOVATE_HOST_RULES: '[{"matchHost":"registry-internal","allowInternal":true},{"matchHost":"gitea","allowInternal":true}]'
+      LOG_LEVEL: info
+
+volumes:
+  registry-public:
+  registry-internal:
+  gitea:
+  runner:
