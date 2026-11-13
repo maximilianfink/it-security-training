@@ -163,11 +163,15 @@ services:
       gitea:
         condition: service_healthy
 
-  # Scanner image used by the CI jobs (built once, contains all tools + vulnerability databases)
+  # Scanner image used by the CI jobs (built once, contains all tools + vulnerability databases).
+  # Fully offline: it only talks to lab-internal hosts (gitea, registry-internal), so it must
+  # never route through a corporate proxy – otherwise `git clone http://gitea:3000` returns 504.
   secscan:
     profiles: ["build-only"]
     build: ./secscan
     image: pizza-pronto/secscan
+    environment:
+      <<: *offline
 
   # Dependency update bot – run on demand: docker compose run --rm renovate
   renovate:
