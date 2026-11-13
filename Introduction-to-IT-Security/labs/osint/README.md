@@ -5,7 +5,7 @@
 > At the end you use your findings to build a convincing pretext for the next lab (spear phishing).
 
 **Rules**
-- Work in your team. Write every answer – and **how** you found it – into the [Lab Report](../../lab-report.md) (section "OSINT Challenge").
+- Work in your team. Write down every answer – and **how** you found it – in your notes.
 - Everything here is fictional and lives on your VM. **Never** use these techniques against real people
   or companies without permission.
 - Each question gives points (in brackets). Stuck? Open the hints one by one – but try first!
@@ -195,7 +195,7 @@ You now know a lot about Pizza Pronto. Use **at least three facts** from parts A
 - **Phone script (vishing):** you call Lena as "Herr Brandt" from Mühle Schäfer, or
 - **Spear-phishing e-mail** to Lena.
 
-In the lab report, note:
+In your notes, write down:
 1. Which facts make your story convincing?
 2. Which **red flags** could Lena still notice?
 3. What should Lena do to verify the call or e-mail?

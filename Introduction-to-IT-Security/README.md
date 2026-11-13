@@ -1,6 +1,6 @@
 # LAB: Introduction to IT Security
 
-> **Please use the [Lab Report](lab-report.md) file to document your answers and observations.**
+> **Write down your answers and observations in your own notes (one file per team is enough).**
 
 Throughout the training we use a fictional company as a running example:
 **[Pizza Pronto](company/README.md)** – you are its security team.
