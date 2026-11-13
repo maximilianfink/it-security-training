@@ -31,7 +31,7 @@ const ADMIN_USER = 'luca';
 const ADMIN_PASSWORD = 'Pronto2024!';
 
 // The cooks log in on the kitchen tablet with a short PIN (nobody wants to type a password there)
-const KITCHEN_PIN = '1234';
+const KITCHEN_PIN = '7294';
 
 const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
 
@@ -275,7 +275,7 @@ app.post('/old-admin/login', (req, res) => {
     <p><b>Flag captured:</b> <code>FLAG{old_admin_never_deleted}</code></p>
     <h3>Saved logins (so the family doesn't forget)</h3>
     <pre>shop admin        : luca / Pronto2024!
-kitchen tablet PIN : 1234
+kitchen tablet PIN : 7294
 office PC          : Pizza2026!
 instagram          : pizzapronto_lb / Bruno2026!</pre>
     <h3>All customers</h3>

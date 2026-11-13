@@ -674,8 +674,9 @@ The cooks process orders at http://localhost:3000/kitchen. It has two beginner b
 ./lab.sh code
 ```
 
-Open `app/server.js` and read it. The cooks' login PIN is written straight into the
-code – find it yourself (just read, no search tricks). Then log in at
+Open the `app` folder and look through the code for the place where the kitchen login is
+checked – i.e. where the entered PIN is compared against the expected value. The PIN is
+written straight into the code, so once you find that spot you know it. Then log in at
 http://localhost:3000/kitchen. You now see every customer's name, address and phone.
 
 **2. Stored XSS via the order notes.** The "Special requests" field is shown on the
@@ -689,8 +690,10 @@ kitchen board without escaping, so HTML in it runs in the cook's browser.
 3. Open the kitchen board (http://localhost:3000/kitchen) in another – you are the cook.
 4. The collector receives the cook's session cookie `kitchen=ok`.
 
-> With that cookie an attacker is in the kitchen without knowing the PIN.
-> Fixes: escape output, keep no PIN in the code, set cookies `HttpOnly` + `SameSite`.
+**Discuss:**
+- What did we just do – step by step?
+- Why did it work? (Where does the note end up, whose browser runs it, why can the script read the cookie?)
+- What could Pizza Pronto do to prevent it?
 
 #### A3 – A typo with consequences (Typosquatting)
 
