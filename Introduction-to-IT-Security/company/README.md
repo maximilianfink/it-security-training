@@ -21,7 +21,8 @@ Business is good – especially Friday and Saturday evenings – and most orders
 ## IT Landscape
 
 ```
-   Customers ──► Order website (shop.pizza-pronto.example) ──► Kitchen tablet
+   Customers ──► Website + order shop (shop.pizza-pronto.example) ──► Kitchen tablet
+                      │  menu, team page, imprint – all in Luca's shop app
                       │  Node.js app, hosted on a small VM
                       │  uses ~200 npm packages, some written by Luca's friend
                       ▼

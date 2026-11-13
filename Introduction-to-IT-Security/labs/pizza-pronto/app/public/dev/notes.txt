@@ -1,0 +1,6 @@
+Luca's Notizen (nicht verlinkt, findet eh keiner)
+- Shop laeuft auf der VM, Deployment mit deploy.sh
+- Kuechen-Tablet: PIN ist kurz, die Koeche wollten nichts Langes tippen
+- Passwortschema bei uns: <Name>+Jahr+!  (z.B. Bruno2026!)
+- TODO: Backup-Ordner aus dem Webroot nehmen
+FLAG{versteckt_ist_nicht_geschuetzt}

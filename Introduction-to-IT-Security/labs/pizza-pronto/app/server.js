@@ -15,6 +15,15 @@ const { renderReceipt } = require('tiny-receipt');
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+// Quick file sharing for the family: everything in public/backup and public/dev can be browsed
+function listing(dir) {
+  return (req, res) => {
+    const files = fs.readdirSync(path.join(__dirname, 'public', dir));
+    res.send(`<html><body><h1>Index of /${dir}/</h1><ul>${files.map((f) => `<li><a href="/${dir}/${f}">${f}</a></li>`).join('')}</ul></body></html>`);
+  };
+}
+app.get('/backup/', listing('backup'));
+app.get('/dev/', listing('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // TODO move to config file before going live
@@ -62,9 +71,9 @@ function page(title, body, cartCount = 0) {
 <html><head><meta charset="utf-8"><title>${title} – Pizza Pronto</title>
 <link rel="stylesheet" href="/style.css"></head>
 <body><header><img src="/logo.svg" alt=""><h1>Pizza Pronto</h1>
-<nav><a href="/">Menu</a> <a href="/cart" class="cart-link">🛒 Cart${badge}</a> <a href="/kitchen">Kitchen</a></nav></header>
+<nav><a href="/">Menu</a> <a href="/team">Team</a> <a href="/cart" class="cart-link">🛒 Cart${badge}</a> <a href="/kitchen">Kitchen</a></nav></header>
 <main>${body}</main>
-<footer>Pizza Pronto · Hauptstraße 12 · Open daily 11:00–23:00</footer></body></html>`;
+<footer>Pizza Pronto · Hauptstraße 12 · Open daily 11:00–23:00 · <a href="/imprint">Imprint</a></footer></body></html>`;
 }
 
 app.get('/', (req, res) => {
@@ -77,7 +86,9 @@ app.get('/', (req, res) => {
   const cta = cart.items.length
     ? `<p class="hint"><a class="cartcta" href="/cart">🛒 Go to cart (${cart.items.length} item(s)) →</a></p>`
     : `<p class="hint">Your cart is empty.</p>`;
-  res.send(page('Menu', `${flash}<h2>Our pizzas</h2><ul class="menu">${rows}</ul>${cta}`, cart.items.length));
+  res.send(page('Menu', `<!-- TODO Luca: alte Admin-Seite /old-admin/ vor Go-Live löschen!! Login ist noch admin/admin -->
+${flash}<h2>Our pizzas</h2><ul class="menu">${rows}</ul>${cta}
+<p class="hint"><a href="/speisekarte-2026.pdf">Menu as PDF</a></p>`, cart.items.length));
 });
 
 app.post('/cart/add', (req, res) => {
@@ -231,6 +242,23 @@ app.get('/admin/printer', requireAdmin, (req, res) => {
   exec(`ping -c 1 ${req.query.host}`, (err, stdout, stderr) => {
     res.send(page('Printer check', `<h2>Printer check</h2><pre>${stdout}${stderr}</pre><a href="/admin">Back</a>`));
   });
+});
+
+app.get('/team', (req, res) => {
+  res.send(page('Team', `<h2>Our team</h2>
+    <p><b>Giulia Romano</b> – owner. Running Pizza Pronto with passion since 2009, born 1975 in Naples.</p>
+    <p><b>Lena Schuster</b> – apprentice (office management) since 01.09.2026. Takes care of e-mails, suppliers
+       and our Instagram <i>@pizzapronto_lb</i>.</p>
+    <p><b>Luca Romano</b> – our "IT guy", studies computer science and built this shop. Loves his dog <i>Bruno</i> and VfB Stuttgart.</p>
+    <p><b>Marco &amp; Elif</b> – kitchen. <b>Jonas, Mia, Kevin</b> – delivery.</p>
+    <p><img src="/img/friday-rush.jpg" width="300" alt="Friday rush"><br><small>Friday rush – from our Instagram</small></p>`));
+});
+
+app.get('/imprint', (req, res) => {
+  res.send(page('Imprint', `<h2>Imprint</h2>
+    <p>Pizza Pronto · Owner: Giulia Romano<br>Hauptstraße 12, 71634 Ludwigsburg (fictional)<br>Phone 07141 555 0101</p>
+    <p>E-mail: <a href="mailto:giulia.romano@pizza-pronto.example">giulia.romano@pizza-pronto.example</a><br>
+       Technical contact: <a href="mailto:luca.romano@pizza-pronto.example">luca.romano@pizza-pronto.example</a></p>`));
 });
 
 const PORT = process.env.PORT || 3000;

@@ -25,6 +25,9 @@ When that finishes, start the Supply Chain part:
 ./lab.sh start
 ```
 
+> **Shop already running from the OSINT challenge?** Then start fresh so you see everything happen live:
+> `./lab.sh reset` and then `./lab.sh start`.
+
 | What | URL |
 |------|-----|
 | Pizza Pronto shop | http://localhost:3000 |

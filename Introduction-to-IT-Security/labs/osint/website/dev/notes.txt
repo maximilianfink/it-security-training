@@ -1,5 +1,0 @@
-Luca's Notizen (nicht verlinkt, findet eh keiner)
-- Shop-VM: ssh luca@shop.pizza-pronto.example
-- Passwortschema bei uns: <Name>+Jahr+!  (z.B. Bruno2026!)
-- TODO: Backup-Ordner aus Webroot nehmen
-FLAG: PP{versteckt_ist_nicht_geschuetzt}

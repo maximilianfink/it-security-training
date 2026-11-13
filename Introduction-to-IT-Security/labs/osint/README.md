@@ -19,18 +19,23 @@
 
 ## Setup (2 min)
 
-In your Kali VM, open a terminal:
+The Pizza Pronto website is the **same shop** you will attack and defend later in the
+[Supply Chain & DevSecOps lab](../pizza-pronto/README.md) – today you only do reconnaissance.
+
+In your Kali VM, open a terminal and start the lab. If `./lab.sh setup` was never run on your VM – or your VM was prepared before this OSINT challenge existed (no *Team* page on the website) – run `./lab.sh setup` once first (needs internet):
 
 ```bash
-cd Introduction-to-IT-Security/labs/osint
+cd Introduction-to-IT-Security/labs/pizza-pronto
+./lab.sh start                                                # starts the shop – it keeps running for the later labs
 sudo apt install -y libimage-exiftool-perl gobuster whatweb   # usually already installed
-cd website && python3 -m http.server 8080                     # the "Pizza Pronto website" – keep this terminal open
 ```
 
-Open a **second terminal** for the tasks and go to the files:
+The website runs at **http://localhost:3000**. Leave the login pages (`/kitchen`, `/admin`) alone for now – they are part of the later lab.
+
+Then go to the OSINT files:
 
 ```bash
-cd Introduction-to-IT-Security/labs/osint/files
+cd ../osint/files
 ls -l
 ```
 
@@ -49,7 +54,8 @@ Tip: `exiftool -s lena-first-day.jpg | grep -i gps` shows only the GPS lines.
 
 ## Part A – Photos (10 min)
 
-Lena (the new apprentice) posted two photos on Instagram: `lena-first-day.jpg` and `friday-rush.jpg`.
+Lena (the new apprentice) posted two photos on Instagram: `lena-first-day.jpg` and `friday-rush.jpg`
+(the second one is also on the website's team page).
 
 **A1 (1 pt)** – When exactly was `lena-first-day.jpg` taken, and with which phone?
 
@@ -86,8 +92,9 @@ Extract it: <code>exiftool -b -ThumbnailImage friday-rush.jpg > thumb.jpg</code>
 ## Part B – Documents (10 min)
 
 Files:
-- `speisekarte-2026.pdf`: the menu, downloadable on the website
-- `angebot-muehle-schaefer.docx`: an offer that Pizza Pronto sent around
+- `speisekarte-2026.pdf`: the menu – download it from the website first:
+  `wget http://localhost:3000/speisekarte-2026.pdf`
+- `angebot-muehle-schaefer.docx`: an offer that Pizza Pronto sent around (in `files/`)
 
 **B1 (2 pts)** – Who created the menu? What is his **Windows user name**, and which software (and version) did he use?
 
@@ -124,18 +131,18 @@ Look at <code>offer/word/comments.xml</code>. Then search the main text for hidd
 
 ## Part C – Website (15 min)
 
-Target: **http://localhost:8080** – only this one!
+Target: **http://localhost:3000** – only this one!
 
 **C1 (1 pt)** – What is the **e-mail address scheme** of Pizza Pronto? What would Lena's address be?
 
 <details><summary>Hint</summary>
-Click through the website (Team, Impressum).
+Click through the website (Team, and the Imprint link at the bottom).
 </details>
 
 **C2 (1 pt)** – What do the developers want to hide from search engines?
 
 <details><summary>Hint</summary>
-Search engines read a file with a fixed name in the root of every website: <code>curl http://localhost:8080/robots.txt</code>
+Search engines read a file with a fixed name in the root of every website: <code>curl http://localhost:3000/robots.txt</code>
 </details>
 
 **C3 (3 pts)** – Look into the hidden places from C2. How many customer records are lying around, and what data do they contain?
@@ -144,30 +151,30 @@ Search engines read a file with a fixed name in the root of every website: <code
 Open the paths from <code>robots.txt</code> in the browser. Can you see a file list?
 </details>
 <details><summary>Hint 2</summary>
-<code>curl -s http://localhost:8080/backup/&lt;file&gt; | head</code> – count the lines with <code>| wc -l</code> (minus the header line).
+<code>curl -s http://localhost:3000/backup/&lt;file&gt; | head</code> – count the lines with <code>| wc -l</code> (minus the header line).
 </details>
 
 **C4 (2 pts)** – Read the HTML source of the start page. What did Luca forget?
 
 <details><summary>Hint</summary>
-Browser: right-click, then "View Page Source". Or <code>curl -s http://localhost:8080/</code>. Look for <code>&lt;!-- … --&gt;</code>. (Don't log in anywhere – the admin page is only a dummy.)
+Browser: right-click, then "View Page Source". Or <code>curl -s http://localhost:3000/</code>. Look for <code>&lt;!-- … --&gt;</code>. (Don't log in anywhere – the admin page is only a dummy.)
 </details>
 
 **C5 (3 pts)** – Find a directory that is **neither linked nor in robots.txt**. Which flag is in it, and what do you learn about passwords at Pizza Pronto?
 
 <details><summary>Hint 1</summary>
 Guess directory names automatically with a wordlist:
-<code>gobuster dir -u http://localhost:8080 -w /usr/share/wordlists/dirb/common.txt</code>
-(alternative: <code>dirb http://localhost:8080</code>)
+<code>gobuster dir -u http://localhost:3000 -w /usr/share/wordlists/dirb/common.txt</code>
+(alternative: <code>dirb http://localhost:3000</code>)
 </details>
 <details><summary>Hint 2</summary>
-Which results (Status 200 / 301) do you not know yet? Open them in the browser – a directory listing shows the files inside.
+You will also see shop pages like <code>/cart</code>, <code>/kitchen</code> or <code>/admin</code> (401) – ignore them. Which other result do you not know yet? Open it in the browser – a directory listing shows the files inside.
 </details>
 
-**C6 (1 pt)** – Which tool / generator was used to build the website?
+**C6 (1 pt)** – Which web framework is the website built with?
 
 <details><summary>Hint</summary>
-<code>whatweb http://localhost:8080</code> or look for <code>&lt;meta name="generator"&gt;</code> in the source.
+<code>whatweb http://localhost:3000</code> or look at the HTTP response headers: <code>curl -I http://localhost:3000</code>
 </details>
 
 **Bonus (2 pts)** – Collect everything from the team page that could help an attacker guess passwords or sound convincing on the phone.
@@ -177,7 +184,7 @@ Which results (Status 200 / 301) do you not know yet? Open them in the browser �
 - [ ] robots.txt and backup
 - [ ] HTML comment
 - [ ] hidden directory and flag
-- [ ] generator
+- [ ] framework
 
 ---
 
