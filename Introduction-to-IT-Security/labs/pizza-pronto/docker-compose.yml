@@ -12,7 +12,7 @@
 name: pizza-pronto
 
 # Lab-internal traffic must never go through a (corporate) proxy.
-# Only registry-public talks to the internet (registry.npmjs.org) and keeps the proxy settings.
+# Only registry-internal talks to the internet (registry.npmjs.org) and keeps the proxy settings.
 x-no-proxy: &no-proxy
   NO_PROXY: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
   no_proxy: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
