@@ -81,8 +81,9 @@ sudo apt install trivy
 
 ## Pizza Pronto lab (Supply Chain, DevSecOps, Skill Battle)
 
-This lab runs everything locally in Docker – no accounts, no cloud. It needs the Docker
-setup above (`docker.io`, `docker-compose`, user in the `docker` group).
+This lab runs everything locally – no accounts, no cloud. It works with **Docker or
+Podman**; `lab.sh` auto-detects whichever is installed. The `docker.io` setup above is
+enough (make sure your user is in the `docker` group – see the warning there).
 
 **VM requirements:** at least **8 GB RAM** and about **10 GB free disk** for the images.
 
@@ -93,10 +94,11 @@ cd Introduction-to-IT-Security/labs/pizza-pronto
 ./lab.sh setup
 ```
 
-`./lab.sh setup` pulls all images (Gitea, act_runner, Verdaccio, Renovate, Node) and
-builds the shop + the `secscan` scanner image (~3 GB, contains gitleaks, semgrep, trivy
-with its vulnerability DB, syft, hadolint, guarddog). For the OVA, run `setup` once so
-every image and the npm package cache are baked in.
+`./lab.sh setup` installs the Docker Compose v2 plugin if missing, pulls all images
+(Gitea, act_runner, Verdaccio, Renovate, Node) and builds the shop + the `secscan`
+scanner image (~3 GB, contains gitleaks, semgrep, trivy with its vulnerability DB, syft,
+hadolint, guarddog). For the OVA, run `setup` once so every image and the npm package
+cache are baked in – then the lab needs no internet at all.
 
 Verify the images are present:
 
@@ -106,3 +108,8 @@ docker image ls | grep -E 'pizza-pronto|gitea|verdaccio|renovate|node'
 
 Start the lab with `./lab.sh start` (Supply Chain) or `./lab.sh devsecops` (adds Gitea + CI).
 See `Introduction-to-IT-Security/labs/pizza-pronto/README.md`.
+
+> **Behind a corporate proxy** (e.g. on a Bosch laptop): export `HTTP_PROXY`/`HTTPS_PROXY`
+> before `./lab.sh setup` – the build and the npm uplink pick it up. The proxy must be
+> reachable from inside containers (a proxy on `localhost` is not). Inside the training
+> lab there is no proxy and nothing extra is needed.

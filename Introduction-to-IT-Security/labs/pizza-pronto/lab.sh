@@ -13,26 +13,82 @@
 set -e
 cd "$(dirname "$0")"
 
-if docker compose version >/dev/null 2>&1; then
+# The lab runs on Docker or Podman. Pick whatever is installed and working.
+#   ENGINE   -> "docker" or "podman"
+#   COMPOSE  -> "docker compose" / "podman compose" / "docker-compose" / "podman-compose"
+detect_engine() {
+  for e in docker podman; do
+    command -v "$e" >/dev/null 2>&1 || continue
+    if "$e" info >/dev/null 2>&1; then ENGINE="$e"; return 0; fi
+  done
+  # nothing talking yet – produce a precise diagnosis
+  if command -v docker >/dev/null 2>&1; then
+    if sudo docker info >/dev/null 2>&1; then
+      echo "Docker only works with sudo -> your user is not in the 'docker' group yet." >&2
+      echo "Fix it once:  sudo usermod -aG docker \$USER  &&  newgrp docker" >&2
+    else
+      echo "The Docker daemon is not running. Start it:  sudo systemctl enable docker --now" >&2
+    fi
+  elif command -v podman >/dev/null 2>&1; then
+    echo "Podman is installed but not reachable. On a Mac/Windows host start the VM:" >&2
+    echo "  podman machine start" >&2
+  else
+    echo "Neither Docker nor Podman found. Install Docker:  sudo apt install -y docker.io" >&2
+  fi
+  exit 1
+}
+
+detect_compose() {
+  if $ENGINE compose version >/dev/null 2>&1; then COMPOSE="$ENGINE compose"; return; fi
+  if command -v "$ENGINE-compose" >/dev/null 2>&1; then COMPOSE="$ENGINE-compose"; return; fi
+  if [ "$ENGINE" = docker ] && command -v docker-compose >/dev/null 2>&1; then COMPOSE="docker-compose"; return; fi
+  COMPOSE="$ENGINE compose"   # will be installed by './lab.sh setup' on Docker
+}
+
+check_docker() { detect_engine; }   # kept for callers below
+
+# Install the Docker Compose v2 plugin for the current user (Docker only; needs internet, honours proxy).
+install_compose_plugin() {
+  [ "$ENGINE" = docker ] || return 0
+  docker compose version >/dev/null 2>&1 && return 0
+  echo "== Installing the Docker Compose v2 plugin"
+  mkdir -p "$HOME/.docker/cli-plugins"
+  curl -fSL "https://github.com/docker/compose/releases/download/v2.39.1/docker-compose-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)" \
+    -o "$HOME/.docker/cli-plugins/docker-compose"
+  chmod +x "$HOME/.docker/cli-plugins/docker-compose"
+  docker compose version >/dev/null 2>&1 || { echo "Compose v2 install failed." >&2; exit 1; }
   COMPOSE="docker compose"
-elif command -v docker-compose >/dev/null 2>&1; then
-  COMPOSE="docker-compose"
-  echo "Warning: using the old docker-compose (v1). The lab is tested with the Docker Compose v2" >&2
-  echo "plugin. If you hit errors, install it: sudo apt install -y docker-compose-plugin" >&2
-else
-  echo "Docker Compose not found. Install it with:  sudo apt install -y docker-compose-plugin" >&2; exit 1
-fi
-export COMPOSE
+}
+
+# The CI runner needs the engine's socket to launch job containers.
+# Docker: /var/run/docker.sock. Rootless Podman: the user socket (started on demand).
+detect_socket() {
+  [ -n "${DOCKER_SOCKET:-}" ] && { export DOCKER_SOCKET; return; }
+  if [ "$ENGINE" = podman ]; then
+    systemctl --user enable --now podman.socket >/dev/null 2>&1 || true
+    DOCKER_SOCKET="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
+  else
+    DOCKER_SOCKET="/var/run/docker.sock"
+  fi
+  export DOCKER_SOCKET
+}
+
+# Proxy build args so image builds work behind a corporate proxy.
+# In the lab (no proxy env) these expand to nothing and change the behaviour not at all.
+build_proxy_args() {
+  for v in HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy; do
+    eval "val=\${$v:-}"
+    [ -n "$val" ] && printf ' --build-arg %s=%s' "$v" "$val"
+  done
+}
+
 ALL="--profile devsecops --profile tools"
 
-check_docker() {
-  if ! docker info >/dev/null 2>&1; then
-    echo "Cannot talk to Docker. Try:" >&2
-    echo "  sudo systemctl enable docker --now" >&2
-    echo "  sudo usermod -aG docker \$USER   (then log out and in again)" >&2
-    exit 1
-  fi
-}
+# Detect the engine for every real command (not for plain help).
+case "${1:-help}" in
+  help|-h|--help|"") ;;
+  *) detect_engine; detect_compose; export ENGINE COMPOSE ;;
+esac
 
 urls() {
   echo
@@ -58,14 +114,18 @@ wait_for_shop() {
 case "${1:-help}" in
   setup)
     check_docker
+    install_compose_plugin
+    detect_socket
     echo "== Downloading images"
     for img in verdaccio/verdaccio:7.1 gitea/gitea:28.3 gitea/act_runner:0.6.1 \
                renovate/renovate:44.235 node:22-alpine; do
-      docker pull "$img"
+      $ENGINE pull "$img"
     done
     echo "== Building shop and scanner image (takes a few minutes)"
-    docker build -t pizza-pronto/shop ./app
-    docker build -t pizza-pronto/secscan ./secscan
+    # shellcheck disable=SC2046
+    $ENGINE build $(build_proxy_args) -t pizza-pronto/shop ./app
+    # shellcheck disable=SC2046
+    $ENGINE build $(build_proxy_args) -t pizza-pronto/secscan ./secscan
     echo "== First start (fills the package cache for offline use)"
     $COMPOSE $ALL up -d
     wait_for_shop
@@ -82,6 +142,7 @@ case "${1:-help}" in
     ;;
   devsecops)
     check_docker
+    detect_socket
     $COMPOSE --profile devsecops up -d
     wait_for_shop
     ./gitea/init.sh
@@ -110,12 +171,12 @@ case "${1:-help}" in
     # remove the lab packages (incl. everything participants published); seed.sh restores the originals
     $COMPOSE exec -T registry-public sh -c 'cd /verdaccio/storage/data && rm -rf pronto-* tiny-receipt loadsh' || true
     $COMPOSE $ALL down
-    docker volume rm -f pizza-pronto_registry-internal pizza-pronto_gitea pizza-pronto_runner >/dev/null
+    $ENGINE volume rm -f pizza-pronto_registry-internal pizza-pronto_gitea pizza-pronto_runner >/dev/null
     rm -f .env
     find attacker -mindepth 1 ! -name README.md -exec rm -rf {} + 2>/dev/null || true
     echo "Done. Start again with ./lab.sh start (or ./lab.sh devsecops)"
     ;;
   *)
-    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
     ;;
 esac

@@ -22,12 +22,21 @@ x-offline: &offline
   HTTPS_PROXY: ""
   http_proxy: ""
   https_proxy: ""
+# For the one service that reaches the internet (npmjs): pass the host proxy through,
+# but never proxy lab-internal hosts. Empty when no proxy is set (i.e. in the lab).
+x-internet: &internet
+  NO_PROXY: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
+  no_proxy: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
+  HTTP_PROXY: "${HTTP_PROXY:-}"
+  HTTPS_PROXY: "${HTTPS_PROXY:-}"
+  http_proxy: "${http_proxy:-}"
+  https_proxy: "${https_proxy:-}"
 
 services:
 
   registry-public:
     image: verdaccio/verdaccio:7.1
-    environment: *no-proxy
+    environment: *internet
     volumes:
       - ./registry/public.yaml:/verdaccio/conf/config.yaml:ro
       - registry-public:/verdaccio/storage

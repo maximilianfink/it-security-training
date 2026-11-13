@@ -10,8 +10,12 @@ cd "$(dirname "$0")/.."
 GITEA=http://localhost:3030
 ADMIN=luca
 ADMIN_PW=pizza-pronto-123
-COMPOSE="${COMPOSE:-docker compose}"
-$COMPOSE version >/dev/null 2>&1 || COMPOSE=docker-compose
+# COMPOSE is normally inherited from lab.sh; fall back to auto-detection if run standalone.
+if [ -z "${COMPOSE:-}" ]; then
+  for c in "docker compose" "podman compose" docker-compose podman-compose; do
+    $c version >/dev/null 2>&1 && { COMPOSE="$c"; break; }
+  done
+fi
 
 api() {  # api METHOD PATH [JSON]
   curl -s --noproxy '*' -u "$ADMIN:$ADMIN_PW" -X "$1" -H 'content-type: application/json' "$GITEA/api/v1$2" ${3:+-d "$3"}

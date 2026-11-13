@@ -11,7 +11,8 @@
 
 ## 0. Setup (once)
 
-Everything runs locally in Docker inside your Kali VM. No accounts, no logins, no cloud.
+Everything runs locally in containers inside your Kali VM (Docker or Podman – the script
+auto-detects). No accounts, no logins, no cloud.
 
 ```bash
 cd Introduction-to-IT-Security/labs/pizza-pronto
