@@ -197,11 +197,6 @@ Many phones and apps store a small preview picture (<i>thumbnail</i>) inside the
 Extract it: <code>exiftool -b -ThumbnailImage friday-rush.jpg > thumb.jpg</code>, then open <code>thumb.jpg</code> (e.g. <code>xdg-open thumb.jpg</code>).
 </details>
 
-**Done?**
-- [ ] date and phone
-- [ ] place on the map
-- [ ] what the thumbnail reveals
-
 ---
 
 ### Part B – Documents
@@ -236,11 +231,6 @@ A <code>.docx</code> file is just a ZIP archive with XML files inside:
 Look at <code>offer/word/comments.xml</code>. Then search the main text for hidden runs:
 <code>grep -o 'vanish.\{0,400\}' offer/word/document.xml</code> – the text between <code>&lt;w:t&gt;</code> tags is what Word hides.
 </details>
-
-**Done?**
-- [ ] user name and software of the menu
-- [ ] author, editor and storage location of the offer
-- [ ] comment and hidden text
 
 ---
 
@@ -300,13 +290,6 @@ Look at the HTTP response headers: <code>curl -I http://localhost:3000</code>
 
 **Bonus** – Collect everything from the team page that could help an attacker guess passwords or sound convincing on the phone.
 
-**Done?**
-- [ ] e-mail scheme
-- [ ] robots.txt and backup
-- [ ] HTML comment
-- [ ] hidden directory and flag
-- [ ] framework
-
 ---
 
 ### Part D – Build the pretext
@@ -332,7 +315,9 @@ Prepare one countermeasure per finding; we discuss them together. Think about:
 - comments in the HTML source
 - personal details on the team page
 
-### Afterwards: self-check (5 min, only your own data!)
+### 🏠 Homework: self-check (only your own data!)
+
+Do this at home – only against yourself, never anyone else.
 
 - Search for your own name (+ city) and do an image search with your profile photo.
 - Check your e-mail address on [Have I Been Pwned](https://haveibeenpwned.com).
