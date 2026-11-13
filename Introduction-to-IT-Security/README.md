@@ -1118,7 +1118,6 @@ from strangers, that run with a lot of access.
 
 **Your task:** write a short **security skill** that reviews code for the kinds of bugs we
 just saw (hard-coded secrets, injection, unescaped output, dangerous dependencies, …).
-Template and rules: [lab/skills/README.md](lab/skills/README.md).
 
 - At the end the **trainer runs every team's skill** against the shop and compares the hits.
 - Have Copilot / ChatGPT / Claude yourself? Feel free to test your skill live.
