@@ -22,15 +22,16 @@ x-offline: &offline
   HTTPS_PROXY: ""
   http_proxy: ""
   https_proxy: ""
-# For the one service that reaches the internet (npmjs): pass the host proxy through,
-# but never proxy lab-internal hosts. Empty when no proxy is set (i.e. in the lab).
+# For the one service that reaches the internet (npmjs): use the CONTAINER-reachable proxy
+# that lab.sh derived from the host proxy (localhost -> host.docker.internal). Lab-internal
+# hosts are never proxied. All empty when no proxy is set (i.e. in the lab).
 x-internet: &internet
   NO_PROXY: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
   no_proxy: "registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
-  HTTP_PROXY: "${HTTP_PROXY:-}"
-  HTTPS_PROXY: "${HTTPS_PROXY:-}"
-  http_proxy: "${http_proxy:-}"
-  https_proxy: "${https_proxy:-}"
+  HTTP_PROXY: "${CONTAINER_HTTP_PROXY:-}"
+  HTTPS_PROXY: "${CONTAINER_HTTPS_PROXY:-}"
+  http_proxy: "${CONTAINER_HTTP_PROXY:-}"
+  https_proxy: "${CONTAINER_HTTPS_PROXY:-}"
 
 services:
 
@@ -50,6 +51,10 @@ services:
   registry-internal:
     image: verdaccio/verdaccio:7.1
     environment: *internet
+    # make the host alias resolvable so a proxy on the host's localhost is reachable
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "host.containers.internal:host-gateway"
     volumes:
       - ./registry/internal.yaml:/verdaccio/conf/config.yaml:ro
       - registry-internal:/verdaccio/storage

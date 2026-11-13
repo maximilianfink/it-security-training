@@ -73,13 +73,34 @@ detect_socket() {
   export DOCKER_SOCKET
 }
 
-# Proxy build args so image builds work behind a corporate proxy.
-# In the lab (no proxy env) these expand to nothing and change the behaviour not at all.
-build_proxy_args() {
-  for v in HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy; do
-    eval "val=\${$v:-}"
-    [ -n "$val" ] && printf ' --build-arg %s=%s' "$v" "$val"
+# Compute a CONTAINER-reachable proxy from the host proxy.
+# A proxy on localhost/127.0.0.1 (common on Bosch laptops) is the host from the container's
+# point of view -> rewrite it to the host alias. The host's own proxy stays untouched so that
+# "$ENGINE pull" (which runs on the host) keeps working.
+compute_container_proxy() {
+  case "$ENGINE" in
+    podman) HOST_ALIAS="host.containers.internal" ;;
+    *)      HOST_ALIAS="host.docker.internal" ;;
+  esac
+  for v in HTTP_PROXY HTTPS_PROXY; do
+    eval "cur=\${$v:-\${$(echo "$v" | tr '[:upper:]' '[:lower:]'):-}}"
+    case "$cur" in
+      *localhost*|*127.0.0.1*) cur=$(printf '%s' "$cur" | sed -E "s#(localhost|127\\.0\\.0\\.1)#$HOST_ALIAS#g") ;;
+    esac
+    export "CONTAINER_$v=$cur"
   done
+  export CONTAINER_NO_PROXY="registry-internal,registry-public,collector,shop,gitea,localhost,127.0.0.1"
+  [ -n "${CONTAINER_HTTP_PROXY:-}${CONTAINER_HTTPS_PROXY:-}" ] && \
+    echo "   (containers use proxy: ${CONTAINER_HTTPS_PROXY:-$CONTAINER_HTTP_PROXY})"
+}
+
+# Build args so image builds work behind a corporate proxy (container-reachable proxy).
+# Empty in the lab (no proxy) -> changes nothing.
+build_proxy_args() {
+  printf ' --add-host=host.docker.internal:host-gateway --add-host=host.containers.internal:host-gateway'
+  [ -n "${CONTAINER_HTTP_PROXY:-}" ]  && printf ' --build-arg HTTP_PROXY=%s --build-arg http_proxy=%s' "$CONTAINER_HTTP_PROXY" "$CONTAINER_HTTP_PROXY"
+  [ -n "${CONTAINER_HTTPS_PROXY:-}" ] && printf ' --build-arg HTTPS_PROXY=%s --build-arg https_proxy=%s' "$CONTAINER_HTTPS_PROXY" "$CONTAINER_HTTPS_PROXY"
+  [ -n "${CONTAINER_HTTP_PROXY:-}${CONTAINER_HTTPS_PROXY:-}" ] && printf ' --build-arg NO_PROXY=%s --build-arg no_proxy=%s' "$CONTAINER_NO_PROXY" "$CONTAINER_NO_PROXY"
 }
 
 ALL="--profile devsecops --profile tools"
@@ -87,7 +108,7 @@ ALL="--profile devsecops --profile tools"
 # Detect the engine for every real command (not for plain help).
 case "${1:-help}" in
   help|-h|--help|"") ;;
-  *) detect_engine; detect_compose; export ENGINE COMPOSE ;;
+  *) detect_engine; detect_compose; compute_container_proxy; export ENGINE COMPOSE ;;
 esac
 
 urls() {

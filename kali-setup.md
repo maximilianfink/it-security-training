@@ -110,9 +110,12 @@ Start the lab with `./lab.sh start` (Supply Chain) or `./lab.sh devsecops` (adds
 See `Introduction-to-IT-Security/labs/pizza-pronto/README.md`.
 
 > **Behind a corporate proxy** (e.g. on a Bosch laptop): only `./lab.sh setup` needs the
-> internet (to pull images and the shop's npm dependencies). The containers must be able to
-> **reach the proxy and resolve public DNS**. A proxy bound to `localhost` on the host is
-> *not* reachable from inside a container – point the engine/containers at a real proxy host
-> (e.g. `http://rb-proxy-de.bosch.com:8080`) via `HTTP_PROXY`/`HTTPS_PROXY`, or run `setup`
-> on a network with direct internet. Inside the training lab (Kali VM) there is no proxy and
-> nothing extra is needed; after `setup` the lab runs fully offline.
+> internet. Just export your proxy before running it:
+> ```bash
+> export HTTP_PROXY=http://localhost:3128      # your usual proxy
+> export HTTPS_PROXY=http://localhost:3128
+> ```
+> `lab.sh` automatically rewrites a `localhost` proxy to the container-reachable host alias
+> (`host.docker.internal` / `host.containers.internal`) and passes it only to the one service
+> that talks to npmjs. Inside the training lab (Kali VM) there is no proxy and nothing extra is
+> needed; after `setup` the lab runs fully offline.
