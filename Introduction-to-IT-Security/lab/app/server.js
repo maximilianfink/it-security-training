@@ -244,6 +244,44 @@ app.get('/admin/printer', requireAdmin, (req, res) => {
   });
 });
 
+// ---------------- Legacy admin (Luca forgot to delete this) ----------------
+// The very first prototype panel, from before the "real" /admin existed. Still online,
+// still protected only by admin/admin. Exactly the kind of forgotten page attackers love.
+
+app.get('/old-admin/', (req, res) => {
+  res.send(page('Old admin', `<h2>Pizza Pronto – Admin (old)</h2>
+    <p class="hint">Internal tool. Please log in.</p>
+    <form method="post" action="/old-admin/login" class="order login">
+      <input name="user" placeholder="User" autofocus>
+      <input name="password" type="password" placeholder="Password">
+      <button>Log in</button>
+    </form>`));
+});
+
+app.post('/old-admin/login', (req, res) => {
+  const { user, password } = req.body;
+  if (user !== 'admin' || password !== 'admin') {
+    return res.status(401).send(page('Old admin', `<h2>Login failed</h2>
+      <p class="flash" style="background:#f8d7da;border-color:#c0392b;color:#a11">Wrong user or password.</p>
+      <p><a href="/old-admin/">Try again</a></p>`));
+  }
+  const customers = loadOrders()
+    .map((o) => `<tr><td>${o.name}</td><td>${o.address}</td><td>${o.phone}</td></tr>`)
+    .join('');
+  res.send(page('Old admin', `<h2>⚠️ Legacy admin panel</h2>
+    <p class="flash" style="background:#fff3cd;border-color:#e0a800;color:#8a6d00">
+      This is the old prototype panel Luca built first. It should have been deleted before go-live –
+      but the <code>admin/admin</code> login still works, so whoever finds it becomes "admin".</p>
+    <p><b>Flag captured:</b> <code>FLAG{old_admin_never_deleted}</code></p>
+    <h3>Saved logins (so the family doesn't forget)</h3>
+    <pre>shop admin        : luca / Pronto2024!
+kitchen tablet PIN : 1234
+office PC          : Pizza2026!
+instagram          : pizzapronto_lb / Bruno2026!</pre>
+    <h3>All customers</h3>
+    <table><tr><th>Name</th><th>Address</th><th>Phone</th></tr>${customers}</table>`));
+});
+
 app.get('/team', (req, res) => {
   res.send(page('Team', `<h2>Our team</h2>
     <p><b>Giulia Romano</b> – owner. Running Pizza Pronto with passion since 2009, born 1975 in Naples.</p>

@@ -142,7 +142,7 @@ In your Kali VM, open a terminal and start the lab. If `./lab.sh setup` was neve
 ```bash
 cd Introduction-to-IT-Security/lab
 ./lab.sh start                                                # starts the shop – it keeps running for the later labs
-sudo apt install -y libimage-exiftool-perl gobuster whatweb   # usually already installed
+sudo apt install -y libimage-exiftool-perl dirb                # usually already installed
 ```
 
 The website runs at **http://localhost:3000**. Leave the login pages (`/kitchen`, `/admin`) alone for now – they are part of the later lab.
@@ -258,8 +258,7 @@ Click through the website (Team, and the Imprint link at the bottom).
 
 <details><summary>Hint 1</summary>
 You don't have to know the file names – let a tool scan for common files and paths:
-<code>gobuster dir -u http://localhost:3000 -w /usr/share/wordlists/dirb/common.txt</code> (alternative: <code>dirb http://localhost:3000</code>).
-One of the results is a file that every search engine reads first.
+<code>dirb http://localhost:3000</code>. One of the results is a file that every search engine reads first.
 </details>
 <details><summary>Hint 2</summary>
 That file is <code>robots.txt</code> – it tells crawlers which paths to skip (so it basically lists the "secret" ones):
@@ -275,18 +274,19 @@ Open the paths from <code>robots.txt</code> in the browser. Can you see a file l
 <code>curl -s http://localhost:3000/backup/&lt;file&gt; | head</code> – count the lines with <code>| wc -l</code> (minus the header line).
 </details>
 
-**C4** – Read the HTML source of the start page. What did Luca forget?
+**C4** – Read the HTML source of the start page. What did Luca forget – and what happens if you log in there with what the comment tells you?
 
-<details><summary>Hint</summary>
-Browser: right-click, then "View Page Source". Or <code>curl -s http://localhost:3000/</code>. Look for <code>&lt;!-- … --&gt;</code>. (Don't log in anywhere – the admin page is only a dummy.)
+<details><summary>Hint 1</summary>
+Browser: right-click, then "View Page Source". Or <code>curl -s http://localhost:3000/</code>. Look for <code>&lt;!-- … --&gt;</code>.
+</details>
+<details><summary>Hint 2</summary>
+The comment names a forgotten page <b>and</b> its login. Open <code>http://localhost:3000/old-admin/</code> and log in with those credentials. What does the legacy panel hand you? (This is the lab's own app – logging in here is fine.)
 </details>
 
 **C5** – Find a directory that is **neither linked nor in robots.txt**. Which flag is in it, and what do you learn about passwords at Pizza Pronto?
 
 <details><summary>Hint 1</summary>
-Guess directory names automatically with a wordlist:
-<code>gobuster dir -u http://localhost:3000 -w /usr/share/wordlists/dirb/common.txt</code>
-(alternative: <code>dirb http://localhost:3000</code>)
+Guess directory names automatically: <code>dirb http://localhost:3000</code> (same scan as in C2).
 </details>
 <details><summary>Hint 2</summary>
 You will also see shop pages like <code>/cart</code>, <code>/kitchen</code> or <code>/admin</code> (401) – ignore them. Which other result do you not know yet? Open it in the browser – a directory listing shows the files inside.
@@ -295,7 +295,7 @@ You will also see shop pages like <code>/cart</code>, <code>/kitchen</code> or <
 **C6** – Which web framework is the website built with?
 
 <details><summary>Hint</summary>
-<code>whatweb http://localhost:3000</code> or look at the HTTP response headers: <code>curl -I http://localhost:3000</code>
+Look at the HTTP response headers: <code>curl -I http://localhost:3000</code>
 </details>
 
 **Bonus** – Collect everything from the team page that could help an attacker guess passwords or sound convincing on the phone.
