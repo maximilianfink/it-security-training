@@ -292,15 +292,21 @@ updates into a single PR:
 
 ---
 
-## Part C – Supply chain for AI agents: the Skill Battle (≈ 45 min)
+## Part C – AI agents in the supply chain: the Skill Battle (≈ 45 min)
 
-AI coding assistants are extended with **skills** and **MCP servers** – which are just
-more dependencies, often from strangers, that run with a lot of access.
+AI coding assistants are extended with **skills** and **MCP servers** – more dependencies,
+from strangers, that run with a lot of access.
 
-In this part you *write* a security-review skill and, at the end, the trainer runs all
-teams' skills against the shop and compares who found the most. One of the skills in the
-round is a trainer-provided **trap** – a skill that looks helpful but misbehaves. See
-[skills/README.md](skills/README.md) for the rules.
+**Your task:** write a **security-review skill** – a `SKILL.md` that tells an AI agent how to
+review the Pizza Pronto shop for the bugs from Part A/B. Rules and template:
+[skills/README.md](skills/README.md).
+
+- At the end the **trainer runs every team's skill** against the shop and compares the hits.
+- Have Copilot / ChatGPT / Claude yourself? Feel free to test your skill live.
+
+**Skills can also be malicious.** The trainer shows a short **demo**: a helpful-looking skill
+that quietly steals secrets while it "reviews" the code – watch what lands on the attacker's
+dashboard. You don't build one yourself.
 
 ---
 
