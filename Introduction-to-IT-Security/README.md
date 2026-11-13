@@ -11,7 +11,7 @@ The hands-on labs, in the order of the training:
 |---|-----|---------|------|
 | 1 | [Pizza Pronto: Crown Jewels (C/I/A)](#pizza-pronto-crown-jewels-cia-10-min) | Basics | 10 min |
 | 2 | [Pizza Pronto: Who Gets Access?](#pizza-pronto-who-gets-access-10-min) | Basics | 10 min |
-| 3 | **[OSINT Challenge: Investigate Pizza Pronto](#osint-challenge-investigate-pizza-pronto-45-min)** | Attackers & Attacks | 45 min |
+| 3 | **[OSINT Challenge: Investigate Pizza Pronto](#osint-challenge-investigate-pizza-pronto)** | Attackers & Attacks | – |
 | 4 | [Detecting Phishing Emails](#detecting-phishing-emails-10-min) | Attackers & Attacks | 10 min |
 | 5 | [Social Engineering Attack Simulation](#social-engineering-attack-simulation-20-min) | Attackers & Attacks | 20 min |
 | 6 | [Vulnerability Scanning](#vulnerability-scanning-45-minutes) | Vulnerabilities | 45 min |
@@ -59,30 +59,13 @@ Business is good – especially Friday and Saturday evenings – and most orders
    Suppliers: flour wholesaler, drinks supplier, web designer (built the website theme), payment provider
 ```
 
-### Crown Jewels
-
-- Customer data (personal data → GDPR!)
-- The order website – no website on a Friday evening = no revenue
-- Payment & bank access
-- Social media accounts and online reviews (reputation)
-- Grandma Romano's secret dough recipe 🍕
-
-### Typical Questions During the Training
-
-- Which assets need **confidentiality**, **integrity**, **availability**?
-- Who would want to attack Pizza Pronto – and why?
-- What could an attacker find out about Pizza Pronto from public sources?
-- Which suppliers and software components does Pizza Pronto depend on?
-- What would happen if ransomware hit the office PC on a Friday at 7 pm?
-- Which simple policies would make Pizza Pronto more secure?
-
 ---
 
 ## Pizza Pronto: Crown Jewels (C/I/A) (10 min)
 
 **Goal:** apply the protection goals confidentiality, integrity and availability to real (fictional) assets.
 
-1. Read the short description of [Pizza Pronto](#meet-pizza-pronto) – especially "Crown Jewels".
+1. Read the short description of [Pizza Pronto](#meet-pizza-pronto).
 2. In your team, rate each asset: how important is **C**, **I** and **A**? Use *high / medium / low*.
 3. Write **one reason** for every "high" (What exactly would happen if it is lost / changed / unavailable?).
 4. Be ready to present one asset in the plenary.
@@ -130,7 +113,7 @@ Ask three questions per asset: *What if a stranger reads it?* (C) – *What if s
 
 ---
 
-## OSINT Challenge: Investigate Pizza Pronto (45 min)
+## OSINT Challenge: Investigate Pizza Pronto
 
 > Attackers do their homework before they phish. In this challenge **you** are the attacker:
 > find out as much as possible about [Pizza Pronto](#meet-pizza-pronto) – only from "public" material.
@@ -140,16 +123,16 @@ Ask three questions per asset: *What if a stranger reads it?* (C) – *What if s
 - Work in your team. Write down every answer – and **how** you found it – in your notes.
 - Everything here is fictional and lives on your VM. **Never** use these techniques against real people
   or companies without permission.
-- Each question gives points (in brackets). Stuck? Open the hints one by one – but try first!
+- Stuck? Open the hints one by one – but try first! Take as long as you need.
 
-| Part | Topic | Time | Points |
-|---|---|---|---|
-| A | Photos | 10 min | 6 |
-| B | Documents | 10 min | 6 |
-| C | Website | 15 min | 11 (+2 bonus) |
-| D | Build the pretext | 10 min | – |
+| Part | Topic |
+|---|---|
+| A | Photos |
+| B | Documents |
+| C | Website |
+| D | Build the pretext |
 
-### Setup (2 min)
+### Setup
 
 The Pizza Pronto website is the **same shop** you will attack and defend later in the
 [Supply Chain & DevSecOps lab](#supply-chain-security--devsecops-pizza-pronto) – today you only do reconnaissance.
@@ -184,18 +167,18 @@ Tip: `exiftool -s lena-first-day.jpg | grep -i gps` shows only the GPS lines.
 
 ---
 
-### Part A – Photos (10 min)
+### Part A – Photos
 
 Lena (the new apprentice) posted two photos on Instagram: `lena-first-day.jpg` and `friday-rush.jpg`
 (the second one is also on the website's team page).
 
-**A1 (1 pt)** – When exactly was `lena-first-day.jpg` taken, and with which phone?
+**A1** – When exactly was `lena-first-day.jpg` taken, and with which phone?
 
 <details><summary>Hint</summary>
 Look for <code>Date/Time Original</code>, <code>Make</code> and <code>Camera Model Name</code> in the exiftool output.
 </details>
 
-**A2 (2 pts)** – Where was the photo taken? Name the town and the square.
+**A2** – Where was the photo taken? Name the town and the square.
 
 <details><summary>Hint 1</summary>
 The photo contains GPS coordinates. Show them as decimal numbers:
@@ -205,7 +188,7 @@ The photo contains GPS coordinates. Show them as decimal numbers:
 Copy the two numbers (e.g. <code>48.89… 9.19…</code>) into the search field of Google Maps or OpenStreetMap.
 </details>
 
-**A3 (3 pts)** – `friday-rush.jpg` only shows a pizza box – Lena cropped it before posting. What was cut away, and why is that a problem?
+**A3** – `friday-rush.jpg` only shows a pizza box – Lena cropped it before posting. What was cut away, and why is that a problem?
 
 <details><summary>Hint 1</summary>
 Many phones and apps store a small preview picture (<i>thumbnail</i>) inside the photo. It is not always updated when you crop.
@@ -221,14 +204,14 @@ Extract it: <code>exiftool -b -ThumbnailImage friday-rush.jpg > thumb.jpg</code>
 
 ---
 
-### Part B – Documents (10 min)
+### Part B – Documents
 
 Files:
 - `speisekarte-2026.pdf`: the menu – download it from the website first:
   `wget http://localhost:3000/speisekarte-2026.pdf`
 - `angebot-muehle-schaefer.docx`: an offer that Pizza Pronto sent around (in `files/`)
 
-**B1 (2 pts)** – Who created the menu? What is his **Windows user name**, and which software (and version) did he use?
+**B1** – Who created the menu? What is his **Windows user name**, and which software (and version) did he use?
 
 <details><summary>Hint 1</summary>
 <code>exiftool speisekarte-2026.pdf</code> – look at <code>Author</code>, <code>Producer</code> and <code>Keywords</code>.
@@ -237,13 +220,13 @@ Files:
 Windows paths look like <code>C:\Users\&lt;username&gt;\…</code>.
 </details>
 
-**B2 (1 pt)** – Who wrote the Word offer, who edited it last, and where is it stored at Pizza Pronto?
+**B2** – Who wrote the Word offer, who edited it last, and where is it stored at Pizza Pronto?
 
 <details><summary>Hint</summary>
 <code>exiftool angebot-muehle-schaefer.docx</code> – look at <code>Creator</code>, <code>Last Modified By</code> and <code>Description</code>.
 </details>
 
-**B3 (3 pts)** – The Word file contains information you can't see when you open it normally. Find **two** hidden things – and explain why an attacker would love them.
+**B3** – The Word file contains information you can't see when you open it normally. Find **two** hidden things – and explain why an attacker would love them.
 
 <details><summary>Hint 1</summary>
 A <code>.docx</code> file is just a ZIP archive with XML files inside:
@@ -261,23 +244,29 @@ Look at <code>offer/word/comments.xml</code>. Then search the main text for hidd
 
 ---
 
-### Part C – Website (15 min)
+### Part C – Website
 
 Target: **http://localhost:3000** – only this one!
 
-**C1 (1 pt)** – What is the **e-mail address scheme** of Pizza Pronto? What would Lena's address be?
+**C1** – What is the **e-mail address scheme** of Pizza Pronto? What would Lena's address be?
 
 <details><summary>Hint</summary>
 Click through the website (Team, and the Imprint link at the bottom).
 </details>
 
-**C2 (1 pt)** – What do the developers want to hide from search engines?
+**C2** – What do the developers want to hide from search engines?
 
-<details><summary>Hint</summary>
-Search engines read a file with a fixed name in the root of every website: <code>curl http://localhost:3000/robots.txt</code>
+<details><summary>Hint 1</summary>
+You don't have to know the file names – let a tool scan for common files and paths:
+<code>gobuster dir -u http://localhost:3000 -w /usr/share/wordlists/dirb/common.txt</code> (alternative: <code>dirb http://localhost:3000</code>).
+One of the results is a file that every search engine reads first.
+</details>
+<details><summary>Hint 2</summary>
+That file is <code>robots.txt</code> – it tells crawlers which paths to skip (so it basically lists the "secret" ones):
+<code>curl http://localhost:3000/robots.txt</code>
 </details>
 
-**C3 (3 pts)** – Look into the hidden places from C2. How many customer records are lying around, and what data do they contain?
+**C3** – Look into the hidden places from C2. How many customer records are lying around, and what data do they contain?
 
 <details><summary>Hint 1</summary>
 Open the paths from <code>robots.txt</code> in the browser. Can you see a file list?
@@ -286,13 +275,13 @@ Open the paths from <code>robots.txt</code> in the browser. Can you see a file l
 <code>curl -s http://localhost:3000/backup/&lt;file&gt; | head</code> – count the lines with <code>| wc -l</code> (minus the header line).
 </details>
 
-**C4 (2 pts)** – Read the HTML source of the start page. What did Luca forget?
+**C4** – Read the HTML source of the start page. What did Luca forget?
 
 <details><summary>Hint</summary>
 Browser: right-click, then "View Page Source". Or <code>curl -s http://localhost:3000/</code>. Look for <code>&lt;!-- … --&gt;</code>. (Don't log in anywhere – the admin page is only a dummy.)
 </details>
 
-**C5 (3 pts)** – Find a directory that is **neither linked nor in robots.txt**. Which flag is in it, and what do you learn about passwords at Pizza Pronto?
+**C5** – Find a directory that is **neither linked nor in robots.txt**. Which flag is in it, and what do you learn about passwords at Pizza Pronto?
 
 <details><summary>Hint 1</summary>
 Guess directory names automatically with a wordlist:
@@ -303,13 +292,13 @@ Guess directory names automatically with a wordlist:
 You will also see shop pages like <code>/cart</code>, <code>/kitchen</code> or <code>/admin</code> (401) – ignore them. Which other result do you not know yet? Open it in the browser – a directory listing shows the files inside.
 </details>
 
-**C6 (1 pt)** – Which web framework is the website built with?
+**C6** – Which web framework is the website built with?
 
 <details><summary>Hint</summary>
 <code>whatweb http://localhost:3000</code> or look at the HTTP response headers: <code>curl -I http://localhost:3000</code>
 </details>
 
-**Bonus (2 pts)** – Collect everything from the team page that could help an attacker guess passwords or sound convincing on the phone.
+**Bonus** – Collect everything from the team page that could help an attacker guess passwords or sound convincing on the phone.
 
 **Done?**
 - [ ] e-mail scheme
@@ -320,7 +309,7 @@ You will also see shop pages like <code>/cart</code>, <code>/kitchen</code> or <
 
 ---
 
-### Part D – Build the pretext (10 min)
+### Part D – Build the pretext
 
 You now know a lot about Pizza Pronto. Use **at least three facts** from parts A–C and write one of these:
 
@@ -331,8 +320,6 @@ In your notes, write down:
 1. Which facts make your story convincing?
 2. Which **red flags** could Lena still notice?
 3. What should Lena do to verify the call or e-mail?
-
-Then continue with the [Social Engineering lab](#social-engineering-attack-simulation-20-min) (variant "Pizza Pronto").
 
 ---
 
@@ -395,12 +382,6 @@ We will use the Social-Engineer Toolkit (SET) to create a phishing site that mim
 Create a convincing email (DE or EN) that appears to come from a trusted source within the organization. Include a link to the cloned site.
 
 The usage of AI tools is allowed to draft the email content.
-
-### Variant: Pizza Pronto (after the OSINT challenge)
-
-Use the pretext you built in [OSINT Part D](#part-d--build-the-pretext-10-min):
-write the spear phishing e-mail to **Lena** (lena.schuster@pizza-pronto.example), e.g. as "Herr Brandt" from
-Mühle Schäfer announcing new bank details. Name at least three facts you used – and three red flags Lena could spot.
 
 
 ---
